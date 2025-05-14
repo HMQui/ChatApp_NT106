@@ -9,12 +9,10 @@ namespace ChatApp.Server.Hubs
     public class ChatOneOnOneHub : Hub
     {
         private static readonly ConcurrentDictionary<string, string> UserConnections = new();
-        private readonly CloudinaryService _cloudinaryService;
         private readonly S3Service _s3Service;
 
-        public ChatOneOnOneHub(CloudinaryService cloudinaryService, S3Service s3Service)
+        public ChatOneOnOneHub(S3Service s3Service)
         {
-            _cloudinaryService = cloudinaryService;
             _s3Service = s3Service;
         }
 
