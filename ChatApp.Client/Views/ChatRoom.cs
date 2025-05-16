@@ -5,6 +5,7 @@ using ChatApp.Client.Hub;
 using System.IO;
 using Microsoft.VisualBasic.ApplicationServices;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement.ListView;
+using System.Windows.Forms;
 
 
 namespace ChatApp.Client.Views
@@ -16,6 +17,7 @@ namespace ChatApp.Client.Views
         private UserDTO _user;
         private StatusAccountHub _statusHub;
         private ChatOneOnOneHub _chatOneOnOneHub;
+        private NotificationHub _notificationHub;
         private UserService _userService;
         private CircularPictureBoxService _circularPictureBoxService;
         private List<MessageDTO> _messages;
@@ -33,6 +35,7 @@ namespace ChatApp.Client.Views
             // Start the socket hub
             _statusHub = new StatusAccountHub();
             _chatOneOnOneHub = new ChatOneOnOneHub(_fromEmail);
+            _notificationHub = new NotificationHub(_fromEmail);
 
             // Load the toUser data
             _user = AccountDAO.Instance.GetUserInfoByEmail(_toEmail);
@@ -108,6 +111,11 @@ namespace ChatApp.Client.Views
                 }
             });
 
+            // đợi phản hồi từ server nếu có thông báo mới
+            await _notificationHub.ConnectAsync((id, senderEmail, message, messageType) =>
+            {
+                MessageBox.Show($"From: {senderEmail}\nType: {messageType}\nMessage: {message}");
+            });
         }
 
         //nút gửi tin nhắn dạng text
@@ -118,6 +126,7 @@ namespace ChatApp.Client.Views
             {
                 byte[] data = System.Text.Encoding.UTF8.GetBytes(message);
                 await _chatOneOnOneHub.SendMessageAsync(_toEmail, data, "text");
+                await _notificationHub.SendNotification(_fromEmail ,[_toEmail], "Có tin nhắn mới", "message");
             }
         }
 
@@ -134,7 +143,7 @@ namespace ChatApp.Client.Views
 
                     /*gửi ảnh lên server để xử lý (dạng byte)*/
                     await _chatOneOnOneHub.SendMessageAsync(_toEmail, imageBytes, "image");
-
+                    await _notificationHub.SendNotification(_fromEmail ,[_toEmail], "Có tin nhắn mới", "message");
                 }
             }
         }
@@ -157,7 +166,7 @@ namespace ChatApp.Client.Views
                     {
                         /*Gửi file lên server để xử lý (dạng byte)*/
                         await _chatOneOnOneHub.SendMessageAsync(_toEmail, fileBytes, "file", fileName);
-
+                        await _notificationHub.SendNotification(_fromEmail ,[_toEmail], "Có tin nhắn mới", "message");
                     }
                     catch (Exception ex)
                     {
