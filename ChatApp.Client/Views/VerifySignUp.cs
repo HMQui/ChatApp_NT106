@@ -5,6 +5,7 @@ using System.Data;
 using System.Drawing;
 using System.Linq;
 using System.Text;
+using System.Net.Http;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using Timer = System.Threading.Timer;
@@ -16,6 +17,7 @@ using static System.Windows.Forms.VisualStyles.VisualStyleElement.ListView;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using System.IO;
 
 namespace ChatApp.Client.Views
 {

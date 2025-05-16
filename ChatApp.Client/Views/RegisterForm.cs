@@ -75,10 +75,10 @@ namespace ChatApp.Client.Views
         {
             this.Hide();
             this.Close();
-            using (LoginForm loginForm = new LoginForm())
-            {
-                loginForm.ShowDialog();
-            }
+
+            LoginForm loginForm = new LoginForm();
+            loginForm.ShowDialog();
+
         }
 
         private void btnSignUp_Click(object sender, EventArgs e)

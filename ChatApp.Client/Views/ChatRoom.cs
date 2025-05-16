@@ -2,6 +2,7 @@
 using ChatApp.Common.DAO;
 using ChatApp.Common.DTOs;
 using ChatApp.Client.Hub;
+using System.IO;
 using Microsoft.VisualBasic.ApplicationServices;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement.ListView;
 

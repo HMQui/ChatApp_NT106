@@ -2,7 +2,7 @@
 using ChatApp.Client.Services;
 using ChatApp.Common.DAO;
 using ChatApp.Common.DTOs;
-
+using System.IO;
 namespace ChatApp.Client.Views
 {
     public partial class MainForm : Form
@@ -288,10 +288,9 @@ namespace ChatApp.Client.Views
             }
 
             this.Hide();
-            using (LoginForm loginForm = new LoginForm())
-            {
-                loginForm.ShowDialog();
-            }
+            LoginForm login = new LoginForm();
+            login.ShowDialog();
+
             this.Close();
         }
     }

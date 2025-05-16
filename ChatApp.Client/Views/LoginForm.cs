@@ -5,6 +5,8 @@ using Newtonsoft.Json.Linq;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using System;
+using System.IO;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement.ListView;
 
 namespace ChatApp.Client;
