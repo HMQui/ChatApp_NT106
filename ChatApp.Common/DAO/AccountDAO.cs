@@ -104,33 +104,44 @@ namespace ChatApp.Common.DAO
             return DataProvider.Instance.ExcuteNonQuery(query, parameters.ToArray());
         }
 
-        public List<UserDTO> SearchUsersByEmail(string keyword)
+        public UserDTO SearchUsersByEmail(string email)
         {
-            string query = "SELECT id, email, full_name, avatar_url, status, created_at, is_verified " +
-                           "FROM Users WHERE email LIKE @param0";
-            string pattern = $"%{keyword}%";
-            var parameters = new object[] { pattern };
+            string query = @"
+            SELECT 
+                id, 
+                email, 
+                full_name, 
+                avatar_url, 
+                status, 
+                created_at, 
+                is_verified 
+            FROM Users 
+            WHERE email = @param0";
+
+            object[] parameters = { email };
 
             var dataTable = DataProvider.Instance.ExcuteQuery(query, parameters);
-            var result = new List<UserDTO>();
 
-            foreach (DataRow row in dataTable.Rows)
+            if (dataTable.Rows.Count == 0)
+                return null;
+
+            var row = dataTable.Rows[0];
+            var user = new UserDTO
             {
-                var user = new UserDTO
-                {
-                    Id = Convert.ToInt32(row["id"]),
-                    Email = row["email"].ToString(),
-                    FullName = row["full_name"].ToString(),
-                    AvatarUrl = row["avatar_url"] != DBNull.Value ? row["avatar_url"].ToString() : null,
-                    Status = row["status"].ToString(),
-                    CreatedAt = Convert.ToDateTime(row["created_at"]),
-                    IsVerified = Convert.ToBoolean(row["is_verified"])
-                };
-                result.Add(user);
-            }
+                Id = Convert.ToInt32(row["id"]),
+                Email = row["email"].ToString(),
+                FullName = row["full_name"].ToString(),
+                AvatarUrl = row["avatar_url"] != DBNull.Value
+                               ? row["avatar_url"].ToString()
+                               : null,
+                Status = row["status"].ToString(),
+                CreatedAt = Convert.ToDateTime(row["created_at"]),
+                IsVerified = Convert.ToBoolean(row["is_verified"])
+            };
 
-            return result;
+            return user;
         }
+
 
         public UserDTO GetUserInfoByEmail(string email)
         {

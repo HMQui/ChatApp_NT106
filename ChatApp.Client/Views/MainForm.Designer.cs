@@ -84,6 +84,7 @@
             ptbAvatar.TabIndex = 0;
             ptbAvatar.TabStop = false;
             ptbAvatar.WaitOnLoad = true;
+            ptbAvatar.Click += ptbAvatar_Click;
             // 
             // tableLayoutPanel1
             // 

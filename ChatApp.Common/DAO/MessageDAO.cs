@@ -23,7 +23,7 @@ namespace ChatApp.Common.DAO
                 m.group_id AS GroupId,
                 m.message AS Message,
                 m.message_type AS MessageType,
-                m.sent_at AS SentAt,
+                m.sent_at AS SentAt
             FROM Messages m
             JOIN Users sender ON m.sender_id = sender.id
             JOIN Users receiver ON m.receiver_id = receiver.id

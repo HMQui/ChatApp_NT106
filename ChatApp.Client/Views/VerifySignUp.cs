@@ -28,15 +28,13 @@ namespace ChatApp.Client.Views
         private string emailAddress;
         private int countdownSeconds = 300;
         private System.Windows.Forms.Timer countdownTimer;
-        private RegisterForm registerForm;
         private List<TextBox> codeBoxes;
         private static readonly string secretKey = "6DOKMbMsMPPDBTLjdZAlEcFOktrQL7Yz";
-        public VerifySignUp(string verificationCode, string email, RegisterForm parentForm)
+        public VerifySignUp(string verificationCode, string email)
         {
             InitializeComponent();
             correctCode = verificationCode;
             emailAddress = email;
-            registerForm = parentForm;
 
             countdownTimer = new System.Windows.Forms.Timer();
             countdownTimer.Interval = 1000;
@@ -99,8 +97,9 @@ namespace ChatApp.Client.Views
                 };
                 DeleteAccountFromDB(conditions);
                 countdownTimer.Stop();
+                SignUp signUp = new SignUp();
                 this.Hide();
-                registerForm.ShowDialog();
+                signUp.ShowDialog();
                 this.Close();
             }
         }
@@ -140,7 +139,7 @@ namespace ChatApp.Client.Views
                 { "is_verified", 0 }
             };
             DeleteAccountFromDB(conditions);
-            RegisterForm registerForm = new RegisterForm();
+            SignUp registerForm = new SignUp();
             this.Hide();
             registerForm.ShowDialog();
             this.Close();

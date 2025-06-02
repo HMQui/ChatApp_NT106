@@ -8,7 +8,7 @@ namespace ChatApp.Client.Views
     public partial class MainForm : Form
     {
         private readonly string email;
-        private List<UserDTO> friends;
+        private List<UserFriendDTO> friends;
         private StatusAccountHub _statusHub;
         private UserService _userService;
         private CircularPictureBoxService _circularPictureBoxService;
@@ -31,7 +31,7 @@ namespace ChatApp.Client.Views
         private void ListFriend()
         {
             pnFriendList.Controls.Clear();
-            friends = FriendDAO.Instance.GetFriends(email);
+            friends = FriendDAO.Instance.GetFriendsWithStatus(email);
             if (friends.Count == 0)
             {
                 Label label = new Label();
@@ -67,30 +67,7 @@ namespace ChatApp.Client.Views
 
         private void btnSearch_Click(object sender, EventArgs e)
         {
-            pnUsers.Controls.Clear();
-
-            string query = tbSearch.Text.Trim();
-            List<UserDTO> userAccounts = AccountDAO.Instance.SearchUsersByEmail(query);
-
-            if (userAccounts.Count == 0)
-            {
-                Label label = new Label();
-                label.Text = "Không tìm thấy người dùng nào";
-                label.AutoSize = true;
-                label.Font = new Font("Segoe UI", 10, FontStyle.Italic);
-                label.Location = new Point(10, 10);
-                pnUsers.Controls.Add(label);
-            }
-            else
-            {
-                int yOffset = 10;
-                foreach (var user in userAccounts)
-                {
-                    Panel userPanel = CreateUserPanel(user, yOffset);
-                    pnUsers.Controls.Add(userPanel);
-                    yOffset += userPanel.Height + 10;
-                }
-            }
+            
         }
 
         private Panel CreateUserPanel(UserDTO user, int top)
@@ -143,7 +120,7 @@ namespace ChatApp.Client.Views
             return panel;
         }
 
-        private Panel CreateFriendPanel(UserDTO user, int top)
+        private Panel CreateFriendPanel(UserFriendDTO user, int top)
         {
             Panel panel = new Panel();
             panel.Size = new Size(450, 70);
@@ -203,7 +180,7 @@ namespace ChatApp.Client.Views
 
             panel.Click += async (s, e) =>
             {
-                ChatRoom chatRoom = new ChatRoom(email, user.Email);
+                ChatWindow chatRoom = new ChatWindow(email, user.Email, user.FriendStatus);
                 if (_statusHub != null)
                 {
                     await _statusHub.DisconnectAsync();
@@ -225,7 +202,7 @@ namespace ChatApp.Client.Views
                 await _statusHub.DisconnectAsync();
             }
         }
-      
+
         private void UpdateFriendStatus(string email, string newStatus)
         {
             if (InvokeRequired)
@@ -288,9 +265,23 @@ namespace ChatApp.Client.Views
             }
 
             this.Hide();
-            LoginForm login = new LoginForm();
+            SignIn login = new SignIn();
             login.ShowDialog();
 
+            this.Close();
+        }
+
+        private async void ptbAvatar_Click(object sender, EventArgs e)
+        {
+            _userService.SetOfflineStatusInDB(email);
+            if (_statusHub != null)
+            {
+                await _statusHub.SetOffline(email);
+                await _statusHub.DisconnectAsync();
+            }
+            this.Hide();
+            ManageFriend manageFriend = new ManageFriend(email);
+            manageFriend.ShowDialog();
             this.Close();
         }
     }

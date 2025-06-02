@@ -76,6 +76,11 @@ namespace ChatApp.Client.Views
                 await _statusHub.SetOffline(_fromEmail);
                 await _statusHub.DisconnectAsync();
             }
+
+            if (_notificationHub != null)
+            {
+                await _notificationHub.DisconnectAsync();
+            }
         }
 
         // Loading the chat room
@@ -91,7 +96,7 @@ namespace ChatApp.Client.Views
             });
 
             // đợi phản hồi từ server nếu có ai đó gửi tin nhắn
-            await _chatOneOnOneHub.ConnectAsync((senderId, data, messageType) =>
+            await _chatOneOnOneHub.ConnectAsync((senderId, data, messageType, sendAt) =>
             {
                 if (senderId == _fromEmail) return;
                 if (data == null) return;
@@ -125,7 +130,7 @@ namespace ChatApp.Client.Views
             if (!string.IsNullOrEmpty(message))
             {
                 byte[] data = System.Text.Encoding.UTF8.GetBytes(message);
-                await _chatOneOnOneHub.SendMessageAsync(_toEmail, data, "text");
+                await _chatOneOnOneHub.SendMessageAsync(_toEmail, data, "text", DateTime.Now);
                 await _notificationHub.SendNotification(_fromEmail ,[_toEmail], "Có tin nhắn mới", "message");
             }
         }
@@ -142,7 +147,7 @@ namespace ChatApp.Client.Views
                     byte[] imageBytes = File.ReadAllBytes(filePath);
 
                     /*gửi ảnh lên server để xử lý (dạng byte)*/
-                    await _chatOneOnOneHub.SendMessageAsync(_toEmail, imageBytes, "image");
+                    await _chatOneOnOneHub.SendMessageAsync(_toEmail, imageBytes, "image", DateTime.Now);
                     await _notificationHub.SendNotification(_fromEmail ,[_toEmail], "Có tin nhắn mới", "message");
                 }
             }
@@ -165,7 +170,7 @@ namespace ChatApp.Client.Views
                     try
                     {
                         /*Gửi file lên server để xử lý (dạng byte)*/
-                        await _chatOneOnOneHub.SendMessageAsync(_toEmail, fileBytes, "file", fileName);
+                        await _chatOneOnOneHub.SendMessageAsync(_toEmail, fileBytes, "file", DateTime.Now, fileName);
                         await _notificationHub.SendNotification(_fromEmail ,[_toEmail], "Có tin nhắn mới", "message");
                     }
                     catch (Exception ex)

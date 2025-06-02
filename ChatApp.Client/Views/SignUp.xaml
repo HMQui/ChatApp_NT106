@@ -5,16 +5,20 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:ChatApp.Client.Views"
         mc:Ignorable="d"
-        Background="#1A3C34" WindowStyle="None" ResizeMode="NoResize"
+        Background="#1A3C34" ResizeMode="NoResize"
         WindowStartupLocation="CenterScreen"
-        Title="SignUp" Height="550" Width="400">
+        Title="SignUp" Height="600" Width="400"
+        Foreground="DarkGreen"
+        WindowStyle="SingleBorderWindow"
+        >
     
     <Grid >
         <Border Background="White"
-            CornerRadius="20"
             >
             <Grid Margin="30">
                 <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="Auto"/>
@@ -46,60 +50,9 @@
                        HorizontalAlignment="Center" 
                        Margin="0,0,0,30" 
                        Foreground="#1A3C34"/>
-                <!-- Username -->
-                <TextBox Grid.Row="3" Margin="0,0,0,15" Padding="10,10" FontSize="14" BorderThickness="1" BorderBrush="#CCCCCC">
-                    <TextBox.Style>
-                        <Style TargetType="TextBox">
-                            <Setter Property="Template">
-                                <Setter.Value>
-                                    <ControlTemplate TargetType="TextBox">
-                                        <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="5">
-                                            <Grid>
-                                                <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="10,0,0,0">
-                                                    <Image Source="pack://application:,,,/Assets/Images/user (1).png"
-                                           Width="14"
-                                           Height="14"
-                                           RenderOptions.BitmapScalingMode="HighQuality"
-                                           Margin="0,0,5,0">
-                                                        <Image.Style>
-                                                            <Style TargetType="Image">
-                                                                <Setter Property="Visibility" Value="Collapsed"/>
-                                                                <Style.Triggers>
-                                                                    <DataTrigger Binding="{Binding Text, RelativeSource={RelativeSource AncestorType=TextBox}}" Value="">
-                                                                        <Setter Property="Visibility" Value="Visible"/>
-                                                                    </DataTrigger>
-                                                                </Style.Triggers>
-                                                            </Style>
-                                                        </Image.Style>
-                                                    </Image>
-                                                    <TextBlock Text="Username" 
-                                               Foreground="#AAAAAA"
-                                               VerticalAlignment="Center" 
-                                               IsHitTestVisible="False">
-                                                        <TextBlock.Style>
-                                                            <Style TargetType="TextBlock">
-                                                                <Setter Property="Visibility" Value="Collapsed"/>
-                                                                <Style.Triggers>
-                                                                    <DataTrigger Binding="{Binding Text, RelativeSource={RelativeSource AncestorType=TextBox}}" Value="">
-                                                                        <Setter Property="Visibility" Value="Visible"/>
-                                                                    </DataTrigger>
-                                                                </Style.Triggers>
-                                                            </Style>
-                                                        </TextBlock.Style>
-                                                    </TextBlock>
-                                                </StackPanel>
-                                                <ScrollViewer x:Name="PART_ContentHost" Margin="30,0,0,0"/>
-                                            </Grid>
-                                        </Border>
-                                    </ControlTemplate>
-                                </Setter.Value>
-                            </Setter>
-                        </Style>
-                    </TextBox.Style>
-                </TextBox>
-
+                
                 <!-- Email Address -->
-                <TextBox Grid.Row="4" Margin="0,0,0,15" Padding="10,10" FontSize="14" BorderThickness="1" BorderBrush="#CCCCCC">
+                <TextBox Grid.Row="4" Margin="0,0,0,15" Padding="10,10" FontSize="14" BorderThickness="1" BorderBrush="#CCCCCC" Name="tbEmail" TextChanged="tbEmail_TextChanged">
                     <TextBox.Style>
                         <Style TargetType="TextBox">
                             <Setter Property="Template">
@@ -128,6 +81,7 @@
                                                Foreground="#AAAAAA"
                                                VerticalAlignment="Center" 
                                                IsHitTestVisible="False">
+                                                    
                                                         <TextBlock.Style>
                                                             <Style TargetType="TextBlock">
                                                                 <Setter Property="Visibility" Value="Collapsed"/>
@@ -151,7 +105,7 @@
                 </TextBox>
 
                 <!-- Password -->
-                <PasswordBox Grid.Row="5" Margin="0,0,0,15" Padding="10,10" FontSize="14" BorderThickness="1" BorderBrush="#CCCCCC">
+                <PasswordBox Grid.Row="5" Margin="0,0,0,15" Padding="10,10" FontSize="14" BorderThickness="1" BorderBrush="#CCCCCC" Name="tbPass">
                     <PasswordBox.Style>
                         <Style TargetType="PasswordBox">
                             <Setter Property="Template">
@@ -203,7 +157,7 @@
                 </PasswordBox>
 
                 <!-- Confirm Password -->
-                <PasswordBox Grid.Row="6" Margin="0,0,0,15" Padding="10,10" FontSize="14" BorderThickness="1" BorderBrush="#CCCCCC">
+                <PasswordBox Grid.Row="6" Margin="0,0,0,15" Padding="10,10" FontSize="14" BorderThickness="1" BorderBrush="#CCCCCC" Name="tbRpPass">
                     <PasswordBox.Style>
                         <Style TargetType="PasswordBox">
                             <Setter Property="Template">
@@ -254,8 +208,67 @@
                     </PasswordBox.Style>
                 </PasswordBox>
 
+                <!-- Username -->
+                <TextBox Grid.Row="7" Margin="0,0,0,15" Padding="10,10" FontSize="14" BorderThickness="1" BorderBrush="#CCCCCC" Name="tbName" TextChanged="tbName_TextChanged">
+                    <TextBox.Style>
+                        <Style TargetType="TextBox">
+                            <Setter Property="Template">
+                                <Setter.Value>
+                                    <ControlTemplate TargetType="TextBox">
+                                        <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="5">
+                                            <Grid>
+                                                <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="10,0,0,0">
+                                                    <Image Source="pack://application:,,,/Assets/Images/mail.png"
+                                                       Width="14"
+                                                       Height="14"
+                                                       RenderOptions.BitmapScalingMode="HighQuality"
+                                                       Margin="0,0,5,0">
+                                                        <Image.Style>
+                                                            <Style TargetType="Image">
+                                                                <Setter Property="Visibility" Value="Collapsed"/>
+                                                                <Style.Triggers>
+                                                                    <DataTrigger Binding="{Binding Text, RelativeSource={RelativeSource AncestorType=TextBox}}" Value="">
+                                                                        <Setter Property="Visibility" Value="Visible"/>
+                                                                    </DataTrigger>
+                                                                </Style.Triggers>
+                                                            </Style>
+                                                        </Image.Style>
+                                                    </Image>
+                                                    <TextBlock Text="Username" 
+                               Foreground="#AAAAAA"
+                               VerticalAlignment="Center" 
+                               IsHitTestVisible="False">
+                                                        <TextBlock.Style>
+                                                            <Style TargetType="TextBlock">
+                                                                <Setter Property="Visibility" Value="Collapsed"/>
+                                                                <Style.Triggers>
+                                                                    <DataTrigger Binding="{Binding Text, RelativeSource={RelativeSource AncestorType=TextBox}}" Value="">
+                                                                        <Setter Property="Visibility" Value="Visible"/>
+                                                                    </DataTrigger>
+                                                                </Style.Triggers>
+                                                            </Style>
+                                                        </TextBlock.Style>
+                                                    </TextBlock>
+                                                </StackPanel>
+                                                <ScrollViewer x:Name="PART_ContentHost" Margin="29,0,0,0"/>
+                                            </Grid>
+                                        </Border>
+                                    </ControlTemplate>
+                                </Setter.Value>
+                            </Setter>
+                        </Style>
+                    </TextBox.Style>
+                </TextBox>
+
+                <!-- Help Text -->
+                <TextBlock Grid.Row="8" HorizontalAlignment="Left" FontSize="12" Margin="0,0,0,0">
+                    <TextBlock.Inlines>
+                        <Run Text="" Foreground="Red" Name="lbHelpText"/>
+                    </TextBlock.Inlines>
+                </TextBlock>
+
                 <!-- Sign Up Button -->
-                <Button Grid.Row="7" Content="Sign Up" Background="#1A3C34" Foreground="White" FontSize="16" FontWeight="Bold" Padding="10" Margin="0,10,0,15" BorderThickness="0" >
+                <Button Grid.Row="9" Content="Sign Up" Background="#1A3C34" Foreground="White" FontSize="16" FontWeight="Bold" Padding="10" Margin="0,10,0,15" BorderThickness="0" Name="btnSignUp" Click="btnSignUp_Click_1">
                     <Button.Style>
                         <Style TargetType="Button">
                             <Setter Property="Template">
@@ -272,10 +285,10 @@
                 </Button>
 
                 <!-- Log In Link -->
-                <TextBlock Grid.Row="8" HorizontalAlignment="Center" FontSize="14" Margin="0,0,0,0">
+                <TextBlock Grid.Row="10" HorizontalAlignment="Center" FontSize="14" Margin="0,0,0,0">
                     <TextBlock.Inlines>
                         <Run Text="Already have an account? " Foreground="#666666"/>
-                        <Hyperlink Foreground="#1A3C34" TextDecorations="None">Log in</Hyperlink>
+                        <Hyperlink Foreground="#1A3C34" TextDecorations="None" Name="btnBack" Click="btnBack_Click">Log in</Hyperlink>
                     </TextBlock.Inlines>
                 </TextBlock>
             </Grid>

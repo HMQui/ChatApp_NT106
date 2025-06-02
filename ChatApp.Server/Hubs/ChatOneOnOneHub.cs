@@ -22,27 +22,28 @@ namespace ChatApp.Server.Hubs
             return Task.CompletedTask;
         }
 
-        public async Task SendMessage(string receiverEmail, byte[] data, string senderEmail, string messageType, string originalFileName = "")
+        public async Task SendMessage(string receiverEmail, byte[] data, string senderEmail, string messageType, DateTime sendAt, string originalFileName = "")
         {
             string payload = string.Empty;
+            Console.WriteLine(messageType);
 
             if (messageType == "text")
             {
                 payload = Encoding.UTF8.GetString(data);
-                MessageDAO.Instance.InsertMessage(senderEmail, receiverEmail, payload, "text", DateTime.Now);
+                MessageDAO.Instance.InsertMessage(senderEmail, receiverEmail, payload, "text", sendAt);
             }
             else if (messageType == "image")
             {
                 string fileName = $"img_{Guid.NewGuid()}.jpg";
                 string imageUrl = await _s3Service.UploadImageAsync(data, fileName);
-                MessageDAO.Instance.InsertMessage(senderEmail, receiverEmail, imageUrl, "image", DateTime.Now);
+                MessageDAO.Instance.InsertMessage(senderEmail, receiverEmail, imageUrl, "image", sendAt);
                 payload = imageUrl;
             }
             else if (messageType == "file")
             {
                 string fileName = originalFileName;
                 string fileUrl = await _s3Service.UploadFileAsync(data, fileName);
-                MessageDAO.Instance.InsertMessage(senderEmail, receiverEmail, fileUrl, "file", DateTime.Now);
+                MessageDAO.Instance.InsertMessage(senderEmail, receiverEmail, fileUrl, "file", sendAt);
                 payload = fileUrl;
 
             }
@@ -51,14 +52,14 @@ namespace ChatApp.Server.Hubs
             if (UserConnections.TryGetValue(receiverEmail, out var receiverConnectionId))
             {
                 await Clients.Client(receiverConnectionId)
-                    .SendAsync("ReceiveMessage", senderEmail, payload, messageType);
+                    .SendAsync("ReceiveMessage", senderEmail, payload, messageType, sendAt);
             }
 
-            /*if (UserConnections.TryGetValue(senderEmail, out var senderConnectionId))
+            if (UserConnections.TryGetValue(senderEmail, out var senderConnectionId))
             {
                 await Clients.Client(senderConnectionId)
-                    .SendAsync("ReceiveMessage", senderEmail, payload, messageType);
-            }*/
+                    .SendAsync("ReceiveMessage", senderEmail, payload, messageType, sendAt);
+            }
         }
 
 

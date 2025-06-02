@@ -1,9 +1,14 @@
-﻿using System;
-using System.Globalization;
+﻿using ChatApp.Common.DAO;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Media.Imaging;
+using System.IO;
+using Microsoft.IdentityModel.Tokens;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Text;
+
 
 namespace ChatApp.Client.Views
 {
@@ -12,6 +17,7 @@ namespace ChatApp.Client.Views
     /// </summary>
     public partial class SignIn : Window
     {
+        private static readonly string secretKey = "6DOKMbMsMPPDBTLjdZAlEcFOktrQL7Yz";
         private bool _isPasswordVisible;
 
         public static readonly DependencyProperty IsPasswordVisibleProperty =
@@ -37,11 +43,37 @@ namespace ChatApp.Client.Views
             EmailTextBox.TextChanged += EmailTextBox_TextChanged;
             EmailTextBox.GotFocus += (s, e) => UpdateEmailPlaceholderVisibility();
             EmailTextBox.LostFocus += (s, e) => UpdateEmailPlaceholderVisibility();
+
+            /* Authentication */
+            string filePath = Path.GetFullPath(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"..\Services\auth.txt"));
+
+
+            if (File.Exists(filePath))
+            {
+                try
+                {
+                    string token = File.ReadAllText(filePath).Trim();
+
+                    if (!string.IsNullOrEmpty(token))
+                    {
+                        string currEmail = ExtractEmailFromToken(token);
+                        if (AccountDAO.Instance.CheckExistEmail(currEmail))
+                        {
+                            HandleLoginSuccess(currEmail);
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    System.Windows.MessageBox.Show("Lỗi khi đọc file: " + ex.Message);
+                }
+            }
         }
 
         private void EmailTextBox_TextChanged(object sender, TextChangedEventArgs e)
         {
             UpdateEmailPlaceholderVisibility();
+            lbHelpText.Text = "";
         }
 
         private void UpdateEmailPlaceholderVisibility()
@@ -84,6 +116,7 @@ namespace ChatApp.Client.Views
             {
                 PasswordTextBoxControl.Text = PasswordBoxControl.Password;
             }
+            lbHelpText.Text = "";
         }
 
         private void PasswordTextBoxControl_TextChanged(object sender, TextChangedEventArgs e)
@@ -93,6 +126,7 @@ namespace ChatApp.Client.Views
             if (_isPasswordVisible)
             {
                 PasswordBoxControl.Password = PasswordTextBoxControl.Text;
+                lbHelpText.Text = "";
             }
 
         }
@@ -114,6 +148,142 @@ namespace ChatApp.Client.Views
             {
                 PasswordPlaceholderPanel.Visibility = Visibility.Visible;
             }
+        }
+
+        private static string GenerateToken(string email, int expireDays = 7)
+        {
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey));
+            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+
+            var claims = new[]
+            {
+            new Claim(ClaimTypes.Email, email)
+        };
+
+            var token = new JwtSecurityToken(
+                issuer: "zola",
+                audience: "zola",
+                claims: claims,
+                expires: DateTime.UtcNow.AddDays(expireDays),
+                signingCredentials: creds
+            );
+
+            return new JwtSecurityTokenHandler().WriteToken(token);
+        }
+        public static string ExtractEmailFromToken(string token)
+        {
+            var tokenHandler = new JwtSecurityTokenHandler();
+            var key = Encoding.UTF8.GetBytes(secretKey);
+
+            var validationParameters = new TokenValidationParameters
+            {
+                ValidateIssuerSigningKey = true,
+                IssuerSigningKey = new SymmetricSecurityKey(key),
+                ValidateIssuer = true,
+                ValidIssuer = "zola",
+                ValidateAudience = true,
+                ValidAudience = "zola",
+                ValidateLifetime = true,
+                ClockSkew = TimeSpan.Zero
+            };
+
+            try
+            {
+                var principal = tokenHandler.ValidateToken(token, validationParameters, out SecurityToken validatedToken);
+
+                var emailClaim = principal.FindFirst(ClaimTypes.Email);
+                return emailClaim?.Value;
+            }
+            catch (Exception ex)
+            {
+                return null;
+            }
+        }
+
+        private void HandleLoginSuccess(string email)
+        {
+            string token = GenerateToken(email);
+            string filePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"..\Services\auth.txt");
+            Directory.CreateDirectory(Path.GetDirectoryName(filePath));
+            using (FileStream file = new FileStream(filePath, FileMode.Create, FileAccess.Write))
+            using (StreamWriter writer = new StreamWriter(file))
+            {
+                writer.Write(token);
+            }
+
+            this.Hide();
+            using (MainForm mainForm = new MainForm(email))
+            {
+                mainForm.ShowDialog();
+            }
+            this.Close();
+        }
+
+        private bool CheckAccount(string email, string password)
+        {
+            return AccountDAO.Instance.CheckAccount(email, password);
+        }
+
+        private bool isValidEmail(string email)
+        {
+            try
+            {
+                var addr = new System.Net.Mail.MailAddress(email);
+                return addr.Address == email;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        private void click(object sender, RoutedEventArgs e)
+        {
+            string email = EmailTextBox.Text;
+            string password;
+
+            if (PasswordBoxControl.Visibility == Visibility.Visible)
+            {
+                password = PasswordBoxControl.Password;
+            }
+            else
+            {
+                password = PasswordTextBoxControl.Text;
+            }
+
+            if (string.IsNullOrWhiteSpace(email) || string.IsNullOrWhiteSpace(password))
+            {
+                lbHelpText.Text = "Vui lòng nhập email và mật khẩu";
+                return;
+            }
+            else if (!isValidEmail(email))
+            {
+                lbHelpText.Text = "Email không hợp lệ";
+                return;
+            }
+            else if (password.Length < 6)
+            {
+                lbHelpText.Text = "Mật khẩu phải có ít nhất 6 ký tự";
+                return;
+            }
+
+            if (CheckAccount(email, password))
+            {
+                HandleLoginSuccess(email);
+            }
+            else
+            {
+                lbHelpText.Text = "Email hoặc mật khẩu không đúng";
+                return;
+            }
+        }
+
+        private void Button_Click(object sender, RoutedEventArgs e)
+        {
+            this.Hide();
+            SignUp signUp = new SignUp();
+            signUp.ShowDialog();
+            this.Close();
         }
     }
 
