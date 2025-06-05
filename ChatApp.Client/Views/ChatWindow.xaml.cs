@@ -14,6 +14,10 @@ using HA = System.Windows.HorizontalAlignment;
 using OpenFileDialog = Microsoft.Win32.OpenFileDialog;
 using MessageBox = System.Windows.Forms.MessageBox;
 using System.Diagnostics;
+using System.Linq;
+using System.Collections.Generic;
+using System.Globalization;
+using System.Windows.Documents;
 
 namespace ChatApp.Client.Views
 {
@@ -32,6 +36,10 @@ namespace ChatApp.Client.Views
         private CircularPictureBoxService _circularPictureBoxService;
         private List<MessageDTO> _messages;
         bool isBlocked;
+        private List<string> _emojiFiles;
+        private int _currentEmojiPage = 1;
+        private const int EmojisPerPage = 40;
+
         public ChatWindow(string fromEmail, string toEmail, string blocked)
         {
             InitializeComponent();
@@ -57,6 +65,15 @@ namespace ChatApp.Client.Views
             StatusOnOff.Text = _user.Status;
             StatusOnOff.Foreground = _user.Status == "online" ? SWM.Brushes.Green : SWM.Brushes.Red;
             StatusOnOff.Text = _user.Status == "online" ? "Online" : "Offline";
+
+            // Load emoji files
+            string emojiDirectory = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets", "emoji");
+            _emojiFiles = Directory.GetFiles(emojiDirectory, "*.png")
+                                 .OrderBy(f => int.Parse(Path.GetFileNameWithoutExtension(f)))
+                                 .ToList();
+
+            // Load initial emoji page
+            LoadEmojiPage(1);
 
             RenderMessages(_messages, _fromEmail, _toEmail);
         }
@@ -141,16 +158,22 @@ namespace ChatApp.Client.Views
         {
             if (isBlocked)
             {
-                MessageBox.Show("Bạn đã bị người này block");
+                MessageBox.Show("Bạn đã bị người này block");
                 return;
             }
-            string message = TextMess.Text.Trim();
+
+            // Get the text content including emojis
+            TextRange textRange = new TextRange(TextMess.Document.ContentStart, TextMess.Document.ContentEnd);
+            string message = textRange.Text.Trim();
+
             if (!string.IsNullOrEmpty(message))
             {
                 byte[] data = System.Text.Encoding.UTF8.GetBytes(message);
                 await _chatOneOnOneHub.SendMessageAsync(_toEmail, data, "text", DateTime.Now);
-                await _notificationHub.SendNotification(_fromEmail, [_toEmail], "Có tin nhắn mới", "message");
-
+                await _notificationHub.SendNotification(_fromEmail, [_toEmail], "Có tin nhắn mới", "message");
+                
+                // Clear the RichTextBox after sending
+                TextMess.Document.Blocks.Clear();
             }
         }
 
@@ -258,6 +281,11 @@ namespace ChatApp.Client.Views
             if (msg.MessageType == "text")
             {
                 border.Child = new TextBlock { Text = msg.Message };
+
+            }
+            else if (msg.MessageType == "emoji")
+            {
+                border.Child = new TextBlock { Text = msg.Message };
             }
             else if (msg.MessageType == "image")
             {
@@ -356,28 +384,132 @@ namespace ChatApp.Client.Views
 
         private void TextMess_TextChanged(object sender, TextChangedEventArgs e)
         {
-
+            // Handle text changes if needed
         }
         private void EmojiButton_Click(object sender, RoutedEventArgs e)
         {
             EmojiPopup.IsOpen = true;
+            LoadEmojiPage(1); // Load the first page of emojis when the popup opens
+
         }
 
-        private async void EmojiSelected_Click(object sender, RoutedEventArgs e)
+        private void LoadEmojiPage(int page)
         {
-            var btn = sender as System.Windows.Forms.Button;
-            string emoji = btn.Text.ToString();
-            if (isBlocked)
+            EmojiPanel.Children.Clear();
+            _currentEmojiPage = page;
+
+            int startIndex = (page - 1) * EmojisPerPage;
+            int endIndex = Math.Min(startIndex + EmojisPerPage, _emojiFiles.Count);
+
+            for (int i = startIndex; i < endIndex; i++)
             {
-                MessageBox.Show("Bạn đã bị người này block");
-                return;
+                var emojiButton = new SWC.Button
+                {
+                    Width = 32,
+                    Height = 32,
+                    Margin = new Thickness(2),
+                    Tag = _emojiFiles[i],
+                    Padding = new Thickness(2),
+                    Background = SWM.Brushes.Transparent,
+                    BorderThickness = new Thickness(0)
+                };
+
+                try
+                {
+                    var image = new SWC.Image
+                    {
+                        Source = new BitmapImage(new Uri(_emojiFiles[i])),
+                        Width = 24,
+                        Height = 24,
+                        Stretch = Stretch.Uniform
+                    };
+                    emojiButton.Content = image;
+                }
+                catch
+                {
+                    emojiButton.Content = "?";
+                }
+
+                emojiButton.Click += EmojiSelected_Click;
+                EmojiPanel.Children.Add(emojiButton);
             }
 
-            byte[] data = System.Text.Encoding.UTF8.GetBytes(emoji);
-            await _chatOneOnOneHub.SendMessageAsync(_toEmail, data, "emoji", DateTime.Now);
+            EmojiPageText.Text = $"Page {page} of {Math.Ceiling(_emojiFiles.Count / (double)EmojisPerPage)}";
+        }
 
+        private void PreviousEmojiPage_Click(object sender, RoutedEventArgs e)
+        {
+            if (_currentEmojiPage > 1)
+            {
+                LoadEmojiPage(_currentEmojiPage - 1);
+            }
+        }
+
+        private void NextEmojiPage_Click(object sender, RoutedEventArgs e)
+        {
+            int maxPage = (int)Math.Ceiling(_emojiFiles.Count / (double)EmojisPerPage);
+            if (_currentEmojiPage < maxPage)
+            {
+                LoadEmojiPage(_currentEmojiPage + 1);
+            }
+        }
+
+        private void EmojiSelected_Click(object sender, RoutedEventArgs e)
+        {
+            var button = sender as SWC.Button;
+            if (button != null)
+            {
+                string emojiPath = button.Tag.ToString();
+
+                // Tạo hình ảnh emoji
+                var emojiImage = new SWC.Image
+                {
+                    Source = new BitmapImage(new Uri(emojiPath)),
+                    Width = 20,
+                    Height = 20,
+                    Stretch = Stretch.Uniform
+                };
+
+                var inlineContainer = new System.Windows.Documents.InlineUIContainer(emojiImage);
+
+                // Lấy vị trí con trỏ hiện tại
+                var caret = TextMess.CaretPosition;
+
+                // Đảm bảo caret nằm trong một Paragraph
+                Paragraph para = caret.Paragraph;
+                if (para == null)
+                {
+                    // Nếu chưa có Paragraph, thêm mới
+                    para = new Paragraph();
+                    TextMess.Document.Blocks.Add(para);
+                    caret = para.ContentStart;
+                }
+
+                // Chèn emoji vào vị trí con trỏ
+                Inline prevInline = caret.GetAdjacentElement(LogicalDirection.Backward) as Inline;
+                if (prevInline != null)
+                {
+                    para.Inlines.InsertAfter(prevInline, inlineContainer);
+                }
+                else
+                {
+                    para.Inlines.Add(inlineContainer);
+                }
+
+                // Đưa con trỏ ra sau emoji vừa chèn
+                TextMess.CaretPosition = inlineContainer.ElementEnd;
+                // Đặt focus lại vào RichTextBox
+                TextMess.Focus();
+                EmojiPopup.IsOpen = false;
+            }
+        }
+        private void CloseEmojiPopup_Click(object sender, RoutedEventArgs e)
+        {
             EmojiPopup.IsOpen = false;
         }
+
+
+
 
     }
 
