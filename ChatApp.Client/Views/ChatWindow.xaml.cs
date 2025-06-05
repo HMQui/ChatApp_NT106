@@ -181,6 +181,10 @@ namespace ChatApp.Client.Views
                 {
                     border.Child = new TextBlock { Text = msg.Message };
                 }
+                else if (msg.MessageType == "emoji")
+                {
+                    border.Child = new TextBlock { Text = msg.Message}; 
+                }
                 else if (msg.MessageType == "image")
                 {
                     border.Padding = new Thickness(5); // nhỏ hơn để phù hợp hình
@@ -349,7 +353,33 @@ namespace ChatApp.Client.Views
             mainForm.ShowDialog();
             this.Close();
         }
+
+        private void TextMess_TextChanged(object sender, TextChangedEventArgs e)
+        {
+
+        }
+        private void EmojiButton_Click(object sender, RoutedEventArgs e)
+        {
+            EmojiPopup.IsOpen = true;
+        }
+
+        private async void EmojiSelected_Click(object sender, RoutedEventArgs e)
+        {
+            var btn = sender as System.Windows.Forms.Button;
+            string emoji = btn.Text.ToString();
+            if (isBlocked)
+            {
+                MessageBox.Show("Bạn đã bị người này block");
+                return;
+            }
+
+            byte[] data = System.Text.Encoding.UTF8.GetBytes(emoji);
+            await _chatOneOnOneHub.SendMessageAsync(_toEmail, data, "emoji", DateTime.Now);
+
+            EmojiPopup.IsOpen = false;
+        }
+
     }
 
-    
+
 }

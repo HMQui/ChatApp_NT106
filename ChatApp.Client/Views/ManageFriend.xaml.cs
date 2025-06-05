@@ -616,5 +616,10 @@ namespace ChatApp.Client.Views
             mainForm.ShowDialog();
             this.Close();
         }
+
+        private void FindFriendEmail_TextChanged(object sender, TextChangedEventArgs e)
+        {
+
+        }
     }
 }

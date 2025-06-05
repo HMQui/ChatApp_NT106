@@ -41,7 +41,7 @@
         <ScrollViewer Margin="0,50,0,60" VerticalScrollBarVisibility="Auto" Name="ChatBox">
             <StackPanel x:Name="ChatMessages" Margin="10">
 
-                
+
 
             </StackPanel>
         </ScrollViewer>
@@ -50,9 +50,23 @@
         <DockPanel Height="60" VerticalAlignment="Bottom" Background="#ECEFF1">
             <Button Content="🖼" Width="40" Height="40" Margin="10,10,5,10" VerticalAlignment="Center" Name="SendImg" Click="SendImg_Click"/>
             <Button Content="File" Width="40" Height="40" Margin="10,10,5,10" VerticalAlignment="Center" Name="SendFile" Click="SendFile_Click"/>
-            <TextBox VerticalAlignment="Center" FontSize="14" Width="600" Height="40" Margin="0,10" Background="White" BorderBrush="#B0BEC5" BorderThickness="1" Name="TextMess"/>
+            <TextBox FontSize="14" Width="541" Height="40" Margin="0,10" Background="White" BorderBrush="#B0BEC5" BorderThickness="1" Name="TextMess" TextChanged="TextMess_TextChanged"/>
+            <Button Content="😊" Click="EmojiButton_Click" Width="40" Height="40" Margin="5,0,0,0"/>
             <Button Content="Gửi" Width="80" Height="40" Margin="10" VerticalAlignment="Center" Background="#2196F3" Foreground="White" BorderThickness="0" Name="SendTextMess" Click="SendTextMess_Click"/>
         </DockPanel>
+        <Popup Name="EmojiPopup" PlacementTarget="{Binding ElementName=EmojiButton}" StaysOpen="False" Placement="Bottom">
+            <Border Background="White" BorderBrush="Gray" BorderThickness="1" Padding="5">
+                <WrapPanel>
+                    <Button Content="😀" Click="EmojiSelected_Click" Width="40" Height="30"/>
+                    <Button Content="😂" Click="EmojiSelected_Click" Width="40" Height="30"/>
+                    <Button Content="😍" Click="EmojiSelected_Click" Width="40" Height="30"/>
+                    <Button Content="😢" Click="EmojiSelected_Click" Width="40" Height="30"/>
+                    <Button Content="👍" Click="EmojiSelected_Click" Width="40" Height="30"/>
+                    <!-- Thêm emoji tùy ý -->
+                </WrapPanel>
+            </Border>
+        </Popup>
+
     </Grid>
 
 </Window>
