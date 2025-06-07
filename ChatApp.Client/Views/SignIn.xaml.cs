@@ -281,7 +281,7 @@ namespace ChatApp.Client.Views
         private void Button_Click(object sender, RoutedEventArgs e)
         {
             this.Hide();
-            SignUp signUp = new SignUp();
+            SignUp_temp signUp = new SignUp_temp();
             signUp.ShowDialog();
             this.Close();
         }
