@@ -12,10 +12,23 @@
   <ItemGroup>
     <None Remove="Assets\Icons\icons8-eye-30.png" />
     <None Remove="Assets\Icons\icons8-hide-30.png" />
+    <None Remove="Assets\Images\arrow.png" />
+    <None Remove="Assets\Images\attach-file.png" />
+    <None Remove="Assets\Images\back-22-64.png" />
+    <None Remove="Assets\Images\call-5-64.png" />
+    <None Remove="Assets\Images\emoji-31-64.png" />
+    <None Remove="Assets\Images\file-67-64.png" />
+    <None Remove="Assets\Images\image-32-64.png" />
+    <None Remove="Assets\Images\image.png" />
+    <None Remove="Assets\Images\laugh.png" />
     <None Remove="Assets\Images\Logo.png" />
     <None Remove="Assets\Images\mail.png" />
     <None Remove="Assets\Images\password.png" />
+    <None Remove="Assets\Images\send-8-64.png" />
+    <None Remove="Assets\Images\telephone-call.png" />
     <None Remove="Assets\Images\user %281%29.png" />
+    <None Remove="Assets\Images\video-camera.png" />
+    <None Remove="Assets\Images\video-video-1-64.png" />
   </ItemGroup>
 
   <ItemGroup>
@@ -35,10 +48,29 @@
   <ItemGroup>
     <Resource Include="Assets\Icons\icons8-eye-30.png" />
     <Resource Include="Assets\Icons\icons8-hide-30.png" />
+    <Resource Include="Assets\Images\arrow.png" />
+    <Resource Include="Assets\Images\attach-file.png" />
+    <Resource Include="Assets\Images\back-22-64.png" />
+    <Resource Include="Assets\Images\call-5-64.png" />
+    <Resource Include="Assets\Images\emoji-31-64.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Assets\Images\file-67-64.png" />
+    <Resource Include="Assets\Images\image-32-64.png" />
+    <Resource Include="Assets\Images\image.png" />
+    <Resource Include="Assets\Images\laugh.png" />
     <Resource Include="Assets\Images\Logo.png" />
     <Resource Include="Assets\Images\mail.png" />
     <Resource Include="Assets\Images\password.png" />
+    <Resource Include="Assets\Images\send-8-64.png">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Assets\Images\telephone-call.png" />
     <Resource Include="Assets\Images\user (1).png" />
+    <Resource Include="Assets\Images\video-camera.png" />
+    <Resource Include="Assets\Images\video-video-1-64.png">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </Resource>
   </ItemGroup>
 
   <ItemGroup>

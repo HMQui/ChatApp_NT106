@@ -3,6 +3,8 @@ using System.ComponentModel;
 using System.Windows;
 using System.Windows.Threading;
 using NAudio.Wave;
+using ChatApp.Common.DTOs;
+using Microsoft.VisualBasic.ApplicationServices;
 
 
 namespace ChatApp.Client.Views
@@ -16,6 +18,7 @@ namespace ChatApp.Client.Views
         private NotificationHub _notificationHub;
         private readonly string _fromEmail;
         private readonly string _toEmail;
+        private readonly string _user;
         private DispatcherTimer _callTimer;
         private TimeSpan _callDuration = TimeSpan.Zero;
         private bool _isMicOn = true;
@@ -24,13 +27,12 @@ namespace ChatApp.Client.Views
         private bool _isInCall = false;
         private BufferedWaveProvider _bufferedWaveProvider;
         private WaveOutEvent _waveOut;
-
-
-        public CallingDialog(string fromEmail, string toEmail)
+        public CallingDialog(string fromEmail, string toEmail, string username)
         {
             InitializeComponent();
             _fromEmail = fromEmail;
             _toEmail = toEmail;
+            _user = username;
 
             // Start the socket hub
             _notificationHub = new NotificationHub(_fromEmail);
@@ -38,6 +40,7 @@ namespace ChatApp.Client.Views
 
         private async void form_loading(object sender, EventArgs e)
         {
+            txtReceiver.Text = _user; // You can map toEmail to a display name if needed
             // đợi phản hồi từ server nếu có thông báo mới
             await _notificationHub.ConnectAsync((id, senderEmail, message, messageType) =>
             {

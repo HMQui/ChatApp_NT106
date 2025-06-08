@@ -97,9 +97,9 @@ namespace ChatApp.Client.Views
                 };
                 DeleteAccountFromDB(conditions);
                 countdownTimer.Stop();
-                //SignUp signUp = new SignUp();
+                SignUp_temp signUp = new SignUp_temp();
                 this.Hide();
-                //signUp.ShowDialog();
+                signUp.ShowDialog();
                 this.Close();
             }
         }

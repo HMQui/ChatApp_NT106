@@ -186,7 +186,7 @@ namespace ChatApp.Client.Views
             {
                 var isFromMe = msg.SenderEmail == _fromEmail;
                 var align = isFromMe ? HA.Right : HA.Left;
-                var bgColor = isFromMe ? "#C8E6C9" : "#E3F2FD";
+                var bgColor = isFromMe ? "#C8E6C9" : "#FFFFFF";
                 var container = new StackPanel
                 {
                     HorizontalAlignment = align,
@@ -198,7 +198,7 @@ namespace ChatApp.Client.Views
                 {
                     Background = (SWM.Brush)new BrushConverter().ConvertFromString(bgColor),
                     CornerRadius = new CornerRadius(10),
-                    Padding = new Thickness(10)
+                    Padding = new Thickness(10),
                 };
 
                 if (msg.MessageType == "text")
@@ -233,7 +233,7 @@ namespace ChatApp.Client.Views
                         Content = "Tải file",
                         Width = 100,
                         Margin = new Thickness(0, 5, 0, 0),
-                        Tag = msg.Message
+                        Tag = msg.Message,
                     };
                     downloadBtn.Click += DownloadFile_Click;
                     filePanel.Children.Add(downloadBtn);
@@ -263,7 +263,7 @@ namespace ChatApp.Client.Views
         {
             bool isFromMe = msg.SenderEmail == fromEmail;
             var align = isFromMe ? HA.Right : HA.Left;
-            var bgColor = isFromMe ? "#C8E6C9" : "#E3F2FD";
+            var bgColor = isFromMe ? "#C8E6C9" : "#FFFFFF";
 
             var container = new StackPanel
             {
@@ -509,15 +509,16 @@ namespace ChatApp.Client.Views
             EmojiPopup.IsOpen = false;
         }
 
-        // click voice call
-        private async void Button_Click(object sender, RoutedEventArgs e)
+
+        private void CallButton_Click(object sender, RoutedEventArgs e)
         {
-            CallingDialog callingDialog = new CallingDialog(_fromEmail, _toEmail);
+            CallingDialog callingDialog = new CallingDialog(_fromEmail, _toEmail, UserName.Text);
 
             callingDialog.ShowDialog();
 
         }
     }
 
+   
 
 }

@@ -19,7 +19,7 @@ namespace ChatApp.Common.DAO
         private DataProvider() { }
 
 
-        private string connectionString = "Data Source=HUYNHQUI\\SQLEXPRESS;Initial Catalog=CHAT_APP;Integrated Security=True;Trust Server Certificate=True";
+        private string connectionString = "Data Source=HUYNHHUY\\SQLEXPRESS;Initial Catalog=ChatApp;Integrated Security=True;Encrypt=True;Trust Server Certificate=True";
 
         public DataTable ExcuteQuery(string query, object[] parameters = null)
         {
