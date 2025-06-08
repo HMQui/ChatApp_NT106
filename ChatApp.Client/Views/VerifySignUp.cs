@@ -97,9 +97,9 @@ namespace ChatApp.Client.Views
                 };
                 DeleteAccountFromDB(conditions);
                 countdownTimer.Stop();
-                SignUp signUp = new SignUp();
+                //SignUp signUp = new SignUp();
                 this.Hide();
-                signUp.ShowDialog();
+                //signUp.ShowDialog();
                 this.Close();
             }
         }
@@ -139,9 +139,9 @@ namespace ChatApp.Client.Views
                 { "is_verified", 0 }
             };
             DeleteAccountFromDB(conditions);
-            SignUp registerForm = new SignUp();
+            //SignUp registerForm = new SignUp();
             this.Hide();
-            registerForm.ShowDialog();
+            //registerForm.ShowDialog();
             this.Close();
         }
 

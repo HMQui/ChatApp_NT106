@@ -70,56 +70,6 @@ namespace ChatApp.Client.Views
             
         }
 
-        private Panel CreateUserPanel(UserDTO user, int top)
-        {
-            Panel panel = new Panel();
-            panel.Size = new Size(260, 70);
-            panel.Location = new Point(10, top);
-            panel.BorderStyle = BorderStyle.FixedSingle;
-            panel.Anchor = AnchorStyles.Left | AnchorStyles.Right | AnchorStyles.Top;
-
-            // Avatar
-            PictureBox avatar = new PictureBox();
-            avatar.Size = new Size(50, 50);
-            avatar.Location = new Point(10, 10);
-            avatar.SizeMode = PictureBoxSizeMode.Zoom;
-            string defaultAvatarUrl = "https://miamistonesource.com/wp-content/uploads/2018/05/no-avatar-25359d55aa3c93ab3466622fd2ce712d1.jpg";
-
-            string avatarUrl = string.IsNullOrEmpty(user.AvatarUrl) ? defaultAvatarUrl : user.AvatarUrl;
-
-            try
-            {
-                avatar.LoadAsync(avatarUrl);
-            }
-            catch
-            {
-                avatar.LoadAsync(defaultAvatarUrl);
-            }
-
-            _circularPictureBoxService.MakePictureBoxCircular(avatar);
-
-            // Tên người dùng
-            Label nameLabel = new Label();
-            nameLabel.Text = user.FullName;
-            nameLabel.Font = new Font("Segoe UI", 10, FontStyle.Bold);
-            nameLabel.AutoSize = true;
-            nameLabel.Location = new Point(70, 10);
-
-            // Email
-            LinkLabel emailLabel = new LinkLabel();
-            emailLabel.Text = user.Email;
-            emailLabel.Font = new Font("Segoe UI", 9, FontStyle.Regular);
-            emailLabel.AutoSize = true;
-            emailLabel.Location = new Point(70, 35);
-            emailLabel.LinkColor = Color.Blue;
-
-            panel.Controls.Add(avatar);
-            panel.Controls.Add(nameLabel);
-            panel.Controls.Add(emailLabel);
-
-            return panel;
-        }
-
         private Panel CreateFriendPanel(UserFriendDTO user, int top)
         {
             Panel panel = new Panel();

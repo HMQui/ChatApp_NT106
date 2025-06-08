@@ -13,10 +13,6 @@ using System.Windows.Media;
 using HA = System.Windows.HorizontalAlignment;
 using OpenFileDialog = Microsoft.Win32.OpenFileDialog;
 using MessageBox = System.Windows.Forms.MessageBox;
-using System.Diagnostics;
-using System.Linq;
-using System.Collections.Generic;
-using System.Globalization;
 using System.Windows.Documents;
 
 namespace ChatApp.Client.Views
@@ -67,13 +63,13 @@ namespace ChatApp.Client.Views
             StatusOnOff.Text = _user.Status == "online" ? "Online" : "Offline";
 
             // Load emoji files
-            string emojiDirectory = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets", "emoji");
+            /*string emojiDirectory = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets", "emoji");
             _emojiFiles = Directory.GetFiles(emojiDirectory, "*.png")
                                  .OrderBy(f => int.Parse(Path.GetFileNameWithoutExtension(f)))
-                                 .ToList();
+                                 .ToList();*/
 
             // Load initial emoji page
-            LoadEmojiPage(1);
+            //LoadEmojiPage(1);
 
             RenderMessages(_messages, _fromEmail, _toEmail);
         }
@@ -110,6 +106,14 @@ namespace ChatApp.Client.Views
             // đợi phản hồi từ server nếu có thông báo mới
             await _notificationHub.ConnectAsync((id, senderEmail, message, messageType) =>
             {
+                if (messageType == "voice_call")
+                {
+                    System.Windows.Application.Current.Dispatcher.Invoke(() =>
+                    {
+                        IncomingCallDialog incomingCallDialog = new IncomingCallDialog(senderEmail, _fromEmail);
+                        incomingCallDialog.ShowDialog();
+                    });
+                }
                 if (messageType == "block")
                 {
                     isBlocked = true;
@@ -151,9 +155,6 @@ namespace ChatApp.Client.Views
         {
 
         }
-
-        
-
         private async void SendTextMess_Click(object sender, RoutedEventArgs e)
         {
             if (isBlocked)
@@ -508,9 +509,14 @@ namespace ChatApp.Client.Views
             EmojiPopup.IsOpen = false;
         }
 
+        // click voice call
+        private async void Button_Click(object sender, RoutedEventArgs e)
+        {
+            CallingDialog callingDialog = new CallingDialog(_fromEmail, _toEmail);
 
+            callingDialog.ShowDialog();
 
-
+        }
     }
 
 
