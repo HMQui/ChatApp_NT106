@@ -230,8 +230,10 @@ namespace ChatApp.Client.Views
                 await _statusHub.DisconnectAsync();
             }
             this.Hide();
-            ManageFriend manageFriend = new ManageFriend(email);
-            manageFriend.ShowDialog();
+            /*ManageFriend manageFriend = new ManageFriend(email);
+            manageFriend.ShowDialog();*/
+            UserProfile userProfile = new UserProfile(email);
+            userProfile.ShowDialog();
             this.Close();
         }
     }
