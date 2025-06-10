@@ -1,0 +1,84 @@
+﻿<Window x:Class="ChatApp.Client.Views.UserProfile"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:ChatApp.Client.Views"
+        mc:Ignorable="d"
+        Title="UserProfile" Height="450" Width="490">
+    <Grid Margin="20">
+        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+            <DockPanel Background="#FFFFFF" Height="60" LastChildFill="True" Width="432">
+                <!-- Nút back -->
+                <Button Width="40" Height="40" Margin="10,0,0,0"
+            VerticalAlignment="Center" HorizontalAlignment="Left"
+            Background="#E0E0E0" BorderThickness="0" Click="BackButton_Click" Cursor="Hand">
+                    <Button.Style>
+                        <Style TargetType="Button">
+                            <Setter Property="Template">
+                                <Setter.Value>
+                                    <ControlTemplate TargetType="Button">
+                                        <Border x:Name="border" Background="#FFFFFF" CornerRadius="8">
+                                            <Image Source="/Assets/Images/arrow.png" Width="24" Height="24" Stretch="Uniform"/>
+                                        </Border>
+                                        <ControlTemplate.Triggers>
+                                            <Trigger Property="IsMouseOver" Value="True">
+                                                <Setter TargetName="border" Property="Background" Value="#EEEEEE"/>
+                                            </Trigger>
+                                        </ControlTemplate.Triggers>
+                                    </ControlTemplate>
+                                </Setter.Value>
+                            </Setter>
+                        </Style>
+                    </Button.Style>
+                </Button>
+
+                <!-- Grid để căn giữa tiêu đề -->
+                <Grid>
+                    <TextBlock Text="Trang Quản Lý Profile"
+                   FontSize="22" FontWeight="Bold"
+                   Foreground="#1F2937"
+                   HorizontalAlignment="Left"
+                   VerticalAlignment="Center"
+                   TextAlignment="Center" Margin="61,0,0,0"/>
+                </Grid>
+            </DockPanel>
+
+
+
+
+            <!-- Khung chứa thông tin -->
+            <Border Background="White" CornerRadius="16" Padding="20" Width="300" Height="339" >
+                <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Height="291">
+                    <Grid Width="100" Height="100">
+                        <Image Source="/Assets/Images/NoAvatar.png" Stretch="Uniform" RenderOptions.BitmapScalingMode="HighQuality" x:Name="AvatarBrush" Margin="17,18,17,18"/>
+                    </Grid>
+
+                    <TextBlock x:Name="FullNameTextBlock"
+                        FontSize="18" FontWeight="Bold"
+                        Foreground="#111827" TextAlignment="Center" />
+
+                    <TextBlock x:Name="EmailTextBlock"
+                          FontSize="15" FontWeight="Bold"
+                          Foreground="#111827" TextAlignment="Center" />
+
+                    <TextBlock Text="Ngày tham gia:"
+                        Foreground="#6B7280" FontSize="13" TextAlignment="Center" />
+                    <TextBlock x:Name="CreatedAtTextBlock"
+                        Foreground="#374151" FontSize="13" TextAlignment="Center" />
+
+
+                    <!-- Nút Đổi Mật Khẩu -->
+                    <Button Content="Đổi Mật Khẩu" Width="200" Height="40"
+                            Background="#EEF2FF" Foreground="#3B82F6"
+                            FontWeight="Bold" BorderBrush="#3B82F6" BorderThickness="1"
+                            Margin="20 10" />
+                    <Button Content="Đổi Thông Tin Cá Nhân" Width="200" Height="41"
+                            Background="#EEF2FF" Foreground="#3B82F6"
+                            FontWeight="Bold" BorderBrush="#3B82F6" BorderThickness="1"
+                            />
+                </StackPanel>
+            </Border>
+        </StackPanel>
+    </Grid>
+</Window>
