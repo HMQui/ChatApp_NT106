@@ -4,14 +4,12 @@ using System.Windows;
 using System.Windows.Threading;
 using NAudio.Wave;
 
-
 namespace ChatApp.Client.Views
 {
     /// <summary>
-    /// Interaction logic for CallingDialog.xaml
+    /// Interaction logic for VideoCallDialog.xaml
     /// </summary>
-    
-    public partial class CallingDialog : Window
+    public partial class VideoCallDialog : Window
     {
         private NotificationHub _notificationHub;
         private readonly string _fromEmail;
@@ -25,7 +23,9 @@ namespace ChatApp.Client.Views
         private bool _isInCall = false;
         private BufferedWaveProvider _bufferedWaveProvider;
         private WaveOutEvent _waveOut;
-        public CallingDialog(string fromEmail, string toEmail, string username)
+        private bool _isRemoteEnded = false;
+
+        public VideoCallDialog(string fromEmail, string toEmail, string username)
         {
             InitializeComponent();
             _fromEmail = fromEmail;
@@ -36,22 +36,21 @@ namespace ChatApp.Client.Views
             _notificationHub = new NotificationHub(_fromEmail);
         }
 
+        // loading form
         private async void form_loading(object sender, EventArgs e)
         {
             txtReceiver.Text = _user; // You can map toEmail to a display name if needed
             // đợi phản hồi từ server nếu có thông báo mới
             await _notificationHub.ConnectAsync((id, senderEmail, message, messageType) =>
             {
-                if (messageType == "accept_voice_call")
+                if (messageType == "accept_video_call")
                 {
                     Dispatcher.Invoke(async () =>
                     {
                         // UI
-                        txtCallingStatus.Visibility = Visibility.Collapsed;
-                        progressCalling.Visibility = Visibility.Collapsed;
-                        btnCancel.Visibility = Visibility.Collapsed;
+                        spCallState.Visibility = Visibility.Collapsed;
+                        gridInCall.Visibility = Visibility.Visible;
                         txtCallDuration.Visibility = Visibility.Visible;
-                        spInCall.Visibility = Visibility.Visible;
 
                         // Bắt đầu đếm thời gian
                         _callTimer = new DispatcherTimer
@@ -71,7 +70,7 @@ namespace ChatApp.Client.Views
                         // Tạo provider để phát âm thanh
                         _bufferedWaveProvider = new BufferedWaveProvider(new WaveFormat(44100, 1))
                         {
-                            BufferDuration = TimeSpan.FromSeconds(5), // Giảm giật nếu mạng delay
+                            BufferDuration = TimeSpan.FromSeconds(5),
                             DiscardOnBufferOverflow = true
                         };
 
@@ -106,21 +105,18 @@ namespace ChatApp.Client.Views
                         _isInCall = true;
                     });
                 }
-                else if (messageType == "end_voice_call") this.Close();
+                if (messageType == "end_video_call") {
+                    _isRemoteEnded = true;
+                    Dispatcher.Invoke(() => this.Close());
+                }
             });
 
             // gửi thông báo gọi đến user
-            await _notificationHub.SendNotification(_fromEmail, [_toEmail], "voice call", "voice_call");
+            await _notificationHub.SendNotification(_fromEmail, [_toEmail], "video call", "video_call");
         }
-        private void ToggleMic_Click(object sender, RoutedEventArgs e)
+
+        private async void form_closing(object sender, CancelEventArgs e)
         {
-            _isMicOn = !_isMicOn;
-            btnToggleMic.Content = _isMicOn ? "Tắt mic" : "Bật mic";
-            // TODO: gửi trạng thái mic hoặc xử lý ở client
-        }
-        private async void EndCall_Click(object sender, RoutedEventArgs e)
-        {
-            await _notificationHub.SendNotification(_fromEmail, [_toEmail], "voice call", "end_voice_call");
             _waveIn?.StopRecording();
             _waveIn?.Dispose();
             _voiceHub?.DisposeAsync();
@@ -129,29 +125,65 @@ namespace ChatApp.Client.Views
             _bufferedWaveProvider = null;
             _isInCall = false;
             _callTimer?.Stop();
-            System.Windows.Application.Current.Dispatcher.Invoke(() =>
+
+            if (!_isRemoteEnded)
+            {
+                await _notificationHub.SendNotification(_fromEmail, [_toEmail], "video call", "end_video_call");
+            }
+        }
+
+        private async void EndCall_Click(object sender, RoutedEventArgs e)
+        {
+            await _notificationHub.SendNotification(_fromEmail, [_toEmail], "video call", "end_video_call");
+
+            _isRemoteEnded = true;
+
+            _waveIn?.StopRecording();
+            _waveIn?.Dispose();
+            _voiceHub?.DisposeAsync();
+            _waveOut?.Stop();
+            _waveOut?.Dispose();
+            _bufferedWaveProvider = null;
+            _isInCall = false;
+            _callTimer?.Stop();
+
+            Dispatcher.Invoke(() =>
             {
                 this.Close();
             });
         }
 
-        private async void form_closing(object sender, CancelEventArgs e)
+        private async void Cancel_Click(object sender, RoutedEventArgs e)
         {
+            await _notificationHub.SendNotification(_fromEmail, [_toEmail], "video call", "end_video_call");
+
+            _isRemoteEnded = true;
+
             _waveIn?.StopRecording();
             _waveIn?.Dispose();
             _voiceHub?.DisposeAsync();
+            _waveOut?.Stop();
+            _waveOut?.Dispose();
+            _bufferedWaveProvider = null;
             _isInCall = false;
-            if (_notificationHub != null)
+            _callTimer?.Stop();
+
+            Dispatcher.Invoke(() =>
             {
-                await _notificationHub.DisconnectAsync();
-            }
-            this.Close();
+                this.Close();
+            });
         }
 
-        private async void Cancel_Click(object sender, RoutedEventArgs e)
+        private void ToggleMic_Click(object sender, RoutedEventArgs e)
         {
-            await _notificationHub.SendNotification(_fromEmail, [_toEmail], "voice call", "cancel_voice_call");
-            this.Close();
+            _isMicOn = !_isMicOn;
+            btnToggleMic.Content = _isMicOn ? "Tắt mic" : "Bật mic";
         }
+
+        private void ToggleCam_Click(object sender, RoutedEventArgs e)
+        {
+            
+        }
+
     }
 }

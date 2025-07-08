@@ -42,10 +42,10 @@ namespace ChatApp.Client.Views
                 {
                     AvatarBrush.Source = new BitmapImage(new Uri(_userProfile.AvatarUrl));
                 }
-                /*else
+                else
                 {
-                    AvatarBrush.Source = new BitmapImage(new Uri("/Assets/Images/NoAvatar.png"));
-                }*/
+                    AvatarBrush.Source = new BitmapImage(new Uri("pack://application:,,,/Assets/Images/NoAvatar.png"));
+                }
             }
             else
             {
@@ -60,6 +60,11 @@ namespace ChatApp.Client.Views
         }
 
         private void Button_Click(object sender, RoutedEventArgs e)
+        {
+
+        }
+
+        private void Button_Click_1(object sender, RoutedEventArgs e)
         {
 
         }

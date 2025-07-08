@@ -7,6 +7,62 @@
         mc:Ignorable="d"
         Title="ChangeProfile" Height="450" Width="800">
     <Grid>
-        
+        <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Width="578" Height="363">
+            <DockPanel Background="#FFFFFF" Height="60" LastChildFill="True" Width="432">
+                <!-- Nút back -->
+                <Button Width="40" Height="40" Margin="10,0,0,0"
+VerticalAlignment="Center" HorizontalAlignment="Left"
+Background="#E0E0E0" BorderThickness="0" Click="BackButton_Click" Cursor="Hand">
+                    <Button.Style>
+                        <Style TargetType="Button">
+                            <Setter Property="Template">
+                                <Setter.Value>
+                                    <ControlTemplate TargetType="Button">
+                                        <Border x:Name="border" Background="#FFFFFF" CornerRadius="8">
+                                            <Image Source="/Assets/Images/arrow.png" Width="24" Height="24" Stretch="Uniform"/>
+                                        </Border>
+                                        <ControlTemplate.Triggers>
+                                            <Trigger Property="IsMouseOver" Value="True">
+                                                <Setter TargetName="border" Property="Background" Value="#EEEEEE"/>
+                                            </Trigger>
+                                        </ControlTemplate.Triggers>
+                                    </ControlTemplate>
+                                </Setter.Value>
+                            </Setter>
+                        </Style>
+                    </Button.Style>
+                </Button>
+
+                <!-- Grid để căn giữa tiêu đề -->
+                <Grid>
+                    <TextBlock Text="Thay đổi thông tin"
+       FontSize="22" FontWeight="Bold"
+       Foreground="#1F2937"
+       HorizontalAlignment="Left"
+       VerticalAlignment="Center"
+       TextAlignment="Center" Margin="77,0,0,0"/>
+                </Grid>
+            </DockPanel>
+
+            <!-- Avatar -->
+            <Border Width="120" Height="120" CornerRadius="60" BorderBrush="#DDD" BorderThickness="2" Cursor="Hand"
+            >
+                <Image x:Name="AvatarImage"
+               Source="/Assets/Images/NoAvatar.png"
+               Stretch="Fill" 
+               Width="120" Height="120"
+               ClipToBounds="True"/>
+            </Border>
+
+            <!-- Tên người dùng -->
+            <TextBox x:Name="NameTextBox" Height="30" FontSize="14" Width="319"/>
+            <TextBlock Text="Họ và Tên:" FontWeight="Bold"/>
+            <Button Content="Lưu thông tin"
+            Width="150" Height="35"
+            Background="#007ACC" Foreground="White"
+            FontWeight="Bold" Click="SaveButton_Click"/>
+
+            <!-- Nút lưu -->
+        </StackPanel>
     </Grid>
 </Window>

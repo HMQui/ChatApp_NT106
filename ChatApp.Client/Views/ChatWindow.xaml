@@ -8,7 +8,7 @@
         Title="ChatWindow" Height="450" Width="850" MinWidth="850"
         Loaded="form_load"
         Closing="form_closing"
-        Background="#F5F7FA" WindowStartupLocation="CenterScreen" WindowStyle="None">
+        Background="#F5F7FA" WindowStartupLocation="CenterScreen">
     <Grid>
         <!-- Header -->
         <DockPanel Background="#FFFFFF" Height="60" VerticalAlignment="Top" Margin="0,0,0,5" LastChildFill="True">
@@ -47,7 +47,7 @@
                 </StackPanel>
             </StackPanel>
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,0,15,0">
-                <Button Width="40" Height="40" Margin="5" Background="#E0E0E0" BorderThickness="0" FontSize="16" Cursor="Hand">
+                <Button Width="40" Height="40" Margin="5" Background="#E0E0E0" BorderThickness="0" FontSize="16" Cursor="Hand" Click="Button_Click">
                     <Button.Style>
                         <Style TargetType="Button">
                             <Setter Property="Template">
