@@ -285,6 +285,15 @@ namespace ChatApp.Client.Views
             signUp.ShowDialog();
             this.Close();
         }
+
+        private void ForgotPassword_Click(object sender, RoutedEventArgs e)
+        {
+            this.Hide();
+            ForgotPassword forgotPassword = new ForgotPassword();
+            forgotPassword.ShowDialog();
+            this.Close();
+        }
+
     }
 
     // Boolean Negation Converter
