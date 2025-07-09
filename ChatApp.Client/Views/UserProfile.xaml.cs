@@ -56,11 +56,17 @@ namespace ChatApp.Client.Views
                         AvatarBrush.Source = new BitmapImage(new Uri("https://miamistonesource.com/wp-content/uploads/2018/05/no-avatar-25359d55aa3c93ab3466622fd2ce712d1.jpg"));
                     }
                 }
+<<<<<<< HEAD
                 catch (Exception ex)
                 {
                     MessageBox.Show($"Lỗi khi tải hình ảnh avatar: {ex.Message}");
                     // Có thể gán một hình ảnh thay thế hoặc để trống
                     AvatarBrush.Source = null;
+=======
+                else
+                {
+                    AvatarBrush.Source = new BitmapImage(new Uri("pack://application:,,,/Assets/Images/NoAvatar.png"));
+>>>>>>> 02cbe16bbc23b23f90235352c268e8ffb726bed0
                 }
             }
             else
@@ -86,6 +92,11 @@ namespace ChatApp.Client.Views
             {
                 MessageBox.Show($"Lỗi khi quay lại MainForm: {ex.Message}");
             }
+        }
+
+        private void Button_Click_1(object sender, RoutedEventArgs e)
+        {
+
         }
     }
 }

@@ -35,6 +35,7 @@ namespace ChatApp.Client.Views
         private List<string> _emojiFiles;
         private int _currentEmojiPage = 1;
         private const int EmojisPerPage = 40;
+        private bool _isNotificationHubConnected = false;
 
         public ChatWindow(string fromEmail, string toEmail, string blocked)
         {
@@ -104,25 +105,48 @@ namespace ChatApp.Client.Views
             });
 
             // đợi phản hồi từ server nếu có thông báo mới
-            await _notificationHub.ConnectAsync((id, senderEmail, message, messageType) =>
+            await ConnectNotificationHub();
+        }
+
+        private async Task ConnectNotificationHub()
+        {
+            if (_notificationHub == null)
             {
-                if (messageType == "voice_call")
+                _notificationHub = new NotificationHub(_fromEmail);
+            }
+
+            if (!_isNotificationHubConnected)
+            {
+                await _notificationHub.ConnectAsync((id, senderEmail, message, messageType) =>
                 {
-                    System.Windows.Application.Current.Dispatcher.Invoke(() =>
+                    if (messageType == "voice_call")
                     {
-                        IncomingCallDialog incomingCallDialog = new IncomingCallDialog(senderEmail, _fromEmail);
-                        incomingCallDialog.ShowDialog();
-                    });
-                }
-                if (messageType == "block")
-                {
-                    isBlocked = true;
-                }
-                else if (messageType == "unblock")
-                {
-                    isBlocked = false;
-                }
-            });
+                        System.Windows.Application.Current.Dispatcher.Invoke(() =>
+                        {
+                            IncomingCallDialog incomingCallDialog = new IncomingCallDialog(senderEmail, _fromEmail);
+                            incomingCallDialog.ShowDialog();
+                        });
+                    }
+
+                    if (messageType == "video_call")
+                    {
+                        System.Windows.Application.Current.Dispatcher.Invoke(() =>
+                        {
+                            IncomingVideoCallDialog incomingVideoCallDialog = new IncomingVideoCallDialog(senderEmail, _fromEmail, senderEmail);
+                            incomingVideoCallDialog.ShowDialog();
+                        });
+                    }
+                    if (messageType == "block")
+                    {
+                        isBlocked = true;
+                    }
+                    else if (messageType == "unblock")
+                    {
+                        isBlocked = false;
+                    }
+                });
+                _isNotificationHubConnected = true;
+            }
         }
 
         private async void form_closing(object sender, CancelEventArgs e)
@@ -138,6 +162,7 @@ namespace ChatApp.Client.Views
             if (_notificationHub != null)
             {
                 await _notificationHub.DisconnectAsync();
+                _isNotificationHubConnected = false;
             }
         }
 
@@ -509,13 +534,21 @@ namespace ChatApp.Client.Views
             EmojiPopup.IsOpen = false;
         }
 
-
+        //nút voice call
         private void CallButton_Click(object sender, RoutedEventArgs e)
         {
             CallingDialog callingDialog = new CallingDialog(_fromEmail, _toEmail, UserName.Text);
 
             callingDialog.ShowDialog();
 
+        }
+
+        //nút video call
+        private void Button_Click(object sender, RoutedEventArgs e)
+        {
+            VideoCallDialog videoCallDialog = new VideoCallDialog(_fromEmail, _toEmail, UserName.Text);
+
+            videoCallDialog.ShowDialog();
         }
     }
 

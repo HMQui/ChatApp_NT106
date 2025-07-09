@@ -61,15 +61,14 @@ namespace ChatApp.Client.Views
             _isInCall = false;
             _callTimer?.Stop();
             await _notificationHub.SendNotification(_fromEmail, [_toEmail], "voice call", "end_voice_call");
-            System.Windows.Application.Current.Dispatcher.Invoke(() =>
-            {
-                this.Close();
-            });
             if (_notificationHub != null)
             {
                 await _notificationHub.DisconnectAsync();
             }
-            this.Close();
+            System.Windows.Application.Current.Dispatcher.Invoke(() =>
+            {
+                this.Close();
+            });
         }
 
         private async void Accept_Click(object sender, RoutedEventArgs e)
@@ -156,7 +155,6 @@ namespace ChatApp.Client.Views
                 this.Close();
             });
         }
-
 
         private void Decline_Click(object sender, RoutedEventArgs e)
         {

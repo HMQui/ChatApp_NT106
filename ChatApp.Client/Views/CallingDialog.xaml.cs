@@ -3,8 +3,6 @@ using System.ComponentModel;
 using System.Windows;
 using System.Windows.Threading;
 using NAudio.Wave;
-using ChatApp.Common.DTOs;
-using Microsoft.VisualBasic.ApplicationServices;
 
 
 namespace ChatApp.Client.Views
