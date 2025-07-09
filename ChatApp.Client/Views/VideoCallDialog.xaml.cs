@@ -3,6 +3,12 @@ using System.ComponentModel;
 using System.Windows;
 using System.Windows.Threading;
 using NAudio.Wave;
+using AForge.Video;
+using AForge.Video.DirectShow;
+using System.Drawing.Imaging;
+using System.IO;
+using System.Windows.Media.Imaging;
+using MessageBox = System.Windows.Forms.MessageBox;
 
 namespace ChatApp.Client.Views
 {
@@ -24,6 +30,15 @@ namespace ChatApp.Client.Views
         private BufferedWaveProvider _bufferedWaveProvider;
         private WaveOutEvent _waveOut;
         private bool _isRemoteEnded = false;
+
+        //biến camera
+        private VideoCaptureDevice _videoDevice;
+        private FilterInfoCollection _videoDevices;
+        private bool _isCamOn = false;
+        private VideoCallHub _videoHub;
+        private System.Timers.Timer _videoTimer;
+
+        private bool _isClosing = false;
 
         public VideoCallDialog(string fromEmail, string toEmail, string username)
         {
@@ -67,7 +82,6 @@ namespace ChatApp.Client.Views
                         // Voice Call
                         _voiceHub = new VoiceCallHub(_fromEmail);
 
-                        // Tạo provider để phát âm thanh
                         _bufferedWaveProvider = new BufferedWaveProvider(new WaveFormat(44100, 1))
                         {
                             BufferDuration = TimeSpan.FromSeconds(5),
@@ -80,17 +94,15 @@ namespace ChatApp.Client.Views
 
                         await _voiceHub.ConnectAsync((senderEmail, audioData) =>
                         {
-                            // BỎ QUA NẾU LÀ ÂM THANH CỦA CHÍNH MÌNH
                             if (senderEmail != _fromEmail && audioData != null && audioData.Length > 0)
                             {
                                 _bufferedWaveProvider.AddSamples(audioData, 0, audioData.Length);
                             }
                         });
 
-
                         _waveIn = new WaveInEvent
                         {
-                            WaveFormat = new WaveFormat(44100, 1) // mono
+                            WaveFormat = new WaveFormat(44100, 1)
                         };
                         _waveIn.DataAvailable += async (s, a) =>
                         {
@@ -103,13 +115,76 @@ namespace ChatApp.Client.Views
                         };
                         _waveIn.StartRecording();
                         _isInCall = true;
+
+                        // ==== VIDEO HUB ====
+
+                        _videoHub = new VideoCallHub(_fromEmail);
+
+                        // 1. Connect để lắng nghe frame từ người khác
+                        await _videoHub.ConnectAsync((senderEmail, frameBytes) =>
+                        {
+                            if (senderEmail != _fromEmail && frameBytes != null && frameBytes.Length > 0)
+                            {
+                                Dispatcher.Invoke(() =>
+                                {
+                                    using (MemoryStream ms = new MemoryStream(frameBytes))
+                                    {
+                                        Bitmap bmp = new Bitmap(ms);
+                                        imgRemoteVideo.Source = ConvertBitmapToImageSource(bmp);
+                                    }
+                                });
+                            }
+                        });
+
+                        // 2. Bật webcam và gửi frame
+                        var videoDevices = new AForge.Video.DirectShow.FilterInfoCollection(AForge.Video.DirectShow.FilterCategory.VideoInputDevice);
+                        if (videoDevices.Count > 0)
+                        {
+                            _videoDevice = new AForge.Video.DirectShow.VideoCaptureDevice(videoDevices[0].MonikerString);
+
+                            _videoDevice.NewFrame += (s, eventArgs) =>
+                            {
+                                using (Bitmap bitmap = (Bitmap)eventArgs.Frame.Clone())
+                                {
+                                    // Resize nhỏ
+                                    Bitmap resized = new Bitmap(320, 240);
+                                    using (Graphics g = Graphics.FromImage(resized))
+                                    {
+                                        g.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.HighQualityBicubic;
+                                        g.DrawImage(bitmap, 0, 0, 320, 240);
+                                    }
+
+                                    byte[] jpgBytes;
+                                    using (MemoryStream ms = new MemoryStream())
+                                    {
+                                        resized.Save(ms, System.Drawing.Imaging.ImageFormat.Jpeg);
+                                        jpgBytes = ms.ToArray();
+                                    }
+
+                                    if (_isInCall && _isCamOn)
+                                    {
+                                        _videoHub.SendFrameAsync(_toEmail, jpgBytes);
+                                    }
+
+                                    resized.Dispose();
+                                }
+                            };
+
+                            _videoDevice.Start();
+                        }
                     });
                 }
-                if (messageType == "end_video_call") {
+                if (messageType == "end_video_call")
+                {
                     _isRemoteEnded = true;
                     Dispatcher.Invoke(() => this.Close());
                 }
+                if (messageType == "cancel_video_call")
+                {
+                    Dispatcher.Invoke(() => this.Close());
+                }
             });
+
 
             // gửi thông báo gọi đến user
             await _notificationHub.SendNotification(_fromEmail, [_toEmail], "video call", "video_call");
@@ -117,19 +192,7 @@ namespace ChatApp.Client.Views
 
         private async void form_closing(object sender, CancelEventArgs e)
         {
-            _waveIn?.StopRecording();
-            _waveIn?.Dispose();
-            _voiceHub?.DisposeAsync();
-            _waveOut?.Stop();
-            _waveOut?.Dispose();
-            _bufferedWaveProvider = null;
-            _isInCall = false;
-            _callTimer?.Stop();
-
-            if (!_isRemoteEnded)
-            {
-                await _notificationHub.SendNotification(_fromEmail, [_toEmail], "video call", "end_video_call");
-            }
+            await CleanupCallAsync();
         }
 
         private async void EndCall_Click(object sender, RoutedEventArgs e)
@@ -138,40 +201,20 @@ namespace ChatApp.Client.Views
 
             _isRemoteEnded = true;
 
-            _waveIn?.StopRecording();
-            _waveIn?.Dispose();
-            _voiceHub?.DisposeAsync();
-            _waveOut?.Stop();
-            _waveOut?.Dispose();
-            _bufferedWaveProvider = null;
-            _isInCall = false;
-            _callTimer?.Stop();
+            await CleanupCallAsync();
 
-            Dispatcher.Invoke(() =>
-            {
-                this.Close();
-            });
+            this.Close();
         }
 
         private async void Cancel_Click(object sender, RoutedEventArgs e)
         {
-            await _notificationHub.SendNotification(_fromEmail, [_toEmail], "video call", "end_video_call");
-
             _isRemoteEnded = true;
 
-            _waveIn?.StopRecording();
-            _waveIn?.Dispose();
-            _voiceHub?.DisposeAsync();
-            _waveOut?.Stop();
-            _waveOut?.Dispose();
-            _bufferedWaveProvider = null;
-            _isInCall = false;
-            _callTimer?.Stop();
+            await _notificationHub.SendNotification(_fromEmail, new[] { _toEmail }, "video call", "end_video_call");
 
-            Dispatcher.Invoke(() =>
-            {
-                this.Close();
-            });
+            await CleanupCallAsync(false);
+
+            this.Close();
         }
 
         private void ToggleMic_Click(object sender, RoutedEventArgs e)
@@ -182,7 +225,164 @@ namespace ChatApp.Client.Views
 
         private void ToggleCam_Click(object sender, RoutedEventArgs e)
         {
-            
+            if (!_isCamOn)
+            {
+                // Bật cam
+                _videoDevices = new FilterInfoCollection(FilterCategory.VideoInputDevice);
+                if (_videoDevices.Count > 0)
+                {
+                    _videoDevice = new VideoCaptureDevice(_videoDevices[0].MonikerString);
+                    _videoDevice.NewFrame += VideoDevice_NewFrame;
+                    _videoDevice.Start();
+
+                    btnToggleCam.Content = "Tắt camera";
+                    _isCamOn = true;
+                }
+                else
+                {
+                    MessageBox.Show("Không tìm thấy webcam!");
+                }
+            }
+            else
+            {
+                // Tắt cam
+                if (_videoDevice != null && _videoDevice.IsRunning)
+                {
+                    _videoDevice.SignalToStop();
+                    _videoDevice.WaitForStop();
+                    _videoDevice.NewFrame -= VideoDevice_NewFrame;
+                    _videoDevice = null;
+                }
+
+                btnToggleCam.Content = "Bật camera";
+                _isCamOn = false;
+            }
+        }
+
+        private async void VideoDevice_NewFrame(object sender, NewFrameEventArgs eventArgs)
+        {
+            if (!_isInCall || !_isCamOn || _isClosing) return;
+
+            try
+            {
+                using (var bitmap = (Bitmap)eventArgs.Frame.Clone())
+                {
+                    byte[] jpegBytes = BitmapToJpeg(bitmap);
+                    await _videoHub.SendFrameAsync(_toEmail, jpegBytes);
+                }
+            }
+            catch
+            {
+                // ignore để không crash NewFrame
+            }
+
+        }
+
+        private byte[] BitmapToJpeg(Bitmap bitmap)
+        {
+            using (var ms = new MemoryStream())
+            {
+                bitmap.Save(ms, ImageFormat.Jpeg);
+                return ms.ToArray();
+            }
+        }
+
+        public static BitmapImage ConvertBitmapToImageSource(Bitmap bitmap)
+        {
+            using (MemoryStream ms = new MemoryStream())
+            {
+                bitmap.Save(ms, ImageFormat.Bmp);
+                ms.Position = 0;
+
+                var img = new BitmapImage();
+                img.BeginInit();
+                img.CacheOption = BitmapCacheOption.OnLoad;
+                img.StreamSource = ms;
+                img.EndInit();
+                img.Freeze();
+                return img;
+            }
+        }
+
+        private async Task CleanupCallAsync(bool sendEndNotification = true)
+        {
+            if (_isClosing) return;
+            _isClosing = true;
+
+            try
+            {
+                if (_videoDevice != null && _videoDevice.IsRunning)
+                {
+                    _videoDevice.NewFrame -= VideoDevice_NewFrame;
+                    _videoDevice.SignalToStop();
+                    _videoDevice.WaitForStop();
+                    _videoDevice.Stop();
+                    _videoDevice = null;
+                }
+            }
+            catch
+            {
+                // ignore
+            }
+
+            try
+            {
+                if (_videoHub != null)
+                {
+                    await _videoHub.DisposeAsync();
+                    _videoHub = null;
+                }
+            }
+            catch { }
+
+            try
+            {
+                imgRemoteVideo.Source = null;
+                imgLocalVideo.Source = null;
+            }
+            catch { }
+
+            try
+            {
+                _waveIn?.StopRecording();
+                _waveIn?.Dispose();
+                _waveIn = null;
+            }
+            catch { }
+
+            try
+            {
+                if (_voiceHub != null)
+                {
+                    await _voiceHub.DisposeAsync();
+                    _voiceHub = null;
+                }
+            }
+            catch { }
+
+            try
+            {
+                _waveOut?.Stop();
+                _waveOut?.Dispose();
+                _waveOut = null;
+            }
+            catch { }
+
+            _bufferedWaveProvider = null;
+            _isInCall = false;
+            _callTimer?.Stop();
+
+            if (!_isRemoteEnded && sendEndNotification)
+            {
+                try
+                {
+                    await _notificationHub.SendNotification(_fromEmail, [_toEmail], "video call", "end_video_call");
+                }
+                catch
+                {
+                    // ignore
+                }
+            }
         }
 
     }
