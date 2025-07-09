@@ -23,10 +23,12 @@
     <None Remove="Assets\Images\laugh.png" />
     <None Remove="Assets\Images\Logo.png" />
     <None Remove="Assets\Images\mail.png" />
+    <None Remove="Assets\Images\NoAvatar.png" />
     <None Remove="Assets\Images\password.png" />
     <None Remove="Assets\Images\send-8-64.png" />
     <None Remove="Assets\Images\telephone-call.png" />
     <None Remove="Assets\Images\user %281%29.png" />
+    <None Remove="Assets\Images\user-group-solid.png" />
     <None Remove="Assets\Images\video-camera.png" />
     <None Remove="Assets\Images\video-video-1-64.png" />
   </ItemGroup>
@@ -61,12 +63,14 @@
     <Resource Include="Assets\Images\laugh.png" />
     <Resource Include="Assets\Images\Logo.png" />
     <Resource Include="Assets\Images\mail.png" />
+    <Resource Include="Assets\Images\NoAvatar.png" />
     <Resource Include="Assets\Images\password.png" />
     <Resource Include="Assets\Images\send-8-64.png">
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
     </Resource>
     <Resource Include="Assets\Images\telephone-call.png" />
     <Resource Include="Assets\Images\user (1).png" />
+    <Resource Include="Assets\Images\user-group-solid.png" />
     <Resource Include="Assets\Images\video-camera.png" />
     <Resource Include="Assets\Images\video-video-1-64.png">
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>

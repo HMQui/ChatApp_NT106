@@ -211,11 +211,8 @@ namespace ChatApp.Client.Views
                 writer.Write(token);
             }
 
-            this.Hide();
-            using (MainForm mainForm = new MainForm(email))
-            {
-                mainForm.ShowDialog();
-            }
+            MainForm_1 mainForm = new MainForm_1(email);
+            mainForm.ShowDialog();
             this.Close();
         }
 

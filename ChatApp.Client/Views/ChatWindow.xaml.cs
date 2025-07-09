@@ -377,7 +377,7 @@ namespace ChatApp.Client.Views
         private void BackButton_Click(object sender, RoutedEventArgs e)
         {
             this.Hide();
-            MainForm mainForm = new MainForm(_fromEmail);
+            MainForm_1 mainForm = new MainForm_1(_fromEmail);
 
             mainForm.ShowDialog();
             this.Close();

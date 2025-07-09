@@ -611,7 +611,7 @@ namespace ChatApp.Client.Views
         {
             this.Hide();
 
-            MainForm mainForm = new MainForm(_fromEmail);
+            MainForm_1 mainForm = new MainForm_1(_fromEmail);
 
             mainForm.ShowDialog();
             this.Close();
