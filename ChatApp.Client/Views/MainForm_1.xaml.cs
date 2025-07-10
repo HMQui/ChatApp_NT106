@@ -2,8 +2,6 @@
 using ChatApp.Client.Services;
 using ChatApp.Common.DAO;
 using ChatApp.Common.DTOs;
-using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Windows;
 using System.Windows.Controls;
@@ -14,7 +12,6 @@ using System.Windows.Shapes;
 using Cursors = System.Windows.Input.Cursors;
 using FontFamily = System.Windows.Media.FontFamily;
 using Path = System.IO.Path;
-using Point = System.Windows.Point;
 using TextBox = System.Windows.Controls.TextBox;
 
 namespace ChatApp.Client.Views
@@ -27,6 +24,7 @@ namespace ChatApp.Client.Views
         private UserService _userService;
         private CircularPictureBoxService _circularPictureBoxService;
         private readonly string defaultAvatarUrl = "https://miamistonesource.com/wp-content/uploads/2018/05/no-avatar-25359d55aa3c93ab3466622fd2ce712d1.jpg";
+        private NotificationService _notificationService;
 
         public MainForm_1(string email)
         {
@@ -142,10 +140,12 @@ namespace ChatApp.Client.Views
             border.MouseDown += async (s, e) =>
             {
                 ChatWindow chatRoom = new ChatWindow(email, user.Email, user.FriendStatus);
+
                 if (_statusHub != null)
                 {
                     await _statusHub.DisconnectAsync();
                 }
+                _notificationService.Dispose();
                 this.Hide();
                 chatRoom.ShowDialog();
                 this.Close();
@@ -156,7 +156,7 @@ namespace ChatApp.Client.Views
 
         private void SearchButton_Click(object sender, RoutedEventArgs e)
         {
-            UsersContent.Children.Clear();
+            /*UsersContent.Children.Clear();
 
             string searchText = SearchTextBox.Text.Trim();
             if (string.IsNullOrWhiteSpace(searchText) || searchText == "Tìm kiếm")
@@ -207,7 +207,7 @@ namespace ChatApp.Client.Views
                     };
                     UsersContent.Children.Add(noResult);
                 }
-            }
+            }*/
         }
 
         private async void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
@@ -218,6 +218,7 @@ namespace ChatApp.Client.Views
                 await _statusHub.SetOffline(email);
                 await _statusHub.DisconnectAsync();
             }
+            _notificationService.Dispose();
         }
 
         private void UpdateFriendStatus(string email, string newStatus)
@@ -260,6 +261,9 @@ namespace ChatApp.Client.Views
 
         private async void Window_Loaded(object sender, RoutedEventArgs e)
         {
+            _notificationService = new NotificationService(email);
+            await _notificationService.ConnectNotificationHub();
+
             await _statusHub.SetOnline(email);
             _userService.SetOnlineStatusInDB(email);
 
@@ -302,7 +306,6 @@ namespace ChatApp.Client.Views
             login.ShowDialog();
             this.Close();
         }
-
 
         private async void ThumbImage_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
         {

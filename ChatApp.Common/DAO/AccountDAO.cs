@@ -142,7 +142,6 @@ namespace ChatApp.Common.DAO
             return user;
         }
 
-
         public UserDTO GetUserInfoByEmail(string email)
         {
             string query = "SELECT id, email, full_name, avatar_url, status, created_at, is_verified FROM Users WHERE email = @param0";

@@ -14,6 +14,7 @@ using HA = System.Windows.HorizontalAlignment;
 using OpenFileDialog = Microsoft.Win32.OpenFileDialog;
 using MessageBox = System.Windows.Forms.MessageBox;
 using System.Windows.Documents;
+using System.Windows.Forms;
 
 namespace ChatApp.Client.Views
 {
@@ -35,6 +36,12 @@ namespace ChatApp.Client.Views
 
     public partial class ChatWindow : Window
     {
+        public static class AppContext
+        {
+            public static string CurrentChatEmail { get; set; }
+        }
+        private UserDTO _userInfo;
+        private UserDTO _friendInfo;
         private readonly string _fromEmail;
         private readonly string _toEmail;
         private UserDTO _user;
@@ -108,7 +115,11 @@ namespace ChatApp.Client.Views
 
         private async void form_load(object sender, EventArgs e)
         {
+            _userInfo = AccountDAO.Instance.GetUserInfoByEmail(_fromEmail);
+            _friendInfo = AccountDAO.Instance.GetUserInfoByEmail(_toEmail);
+
             await _statusHub.SetOnline(_fromEmail);
+
             _userService.SetOnlineStatusInDB(_fromEmail);
 
             // đợi phản hồi từ server nếu có bạn thay đổi trạng thái on off
@@ -137,6 +148,8 @@ namespace ChatApp.Client.Views
 
             // đợi phản hồi từ server nếu có thông báo mới
             await ConnectNotificationHub();
+
+            AppContext.CurrentChatEmail = _toEmail;
         }
 
         private async Task ConnectNotificationHub()
@@ -158,7 +171,6 @@ namespace ChatApp.Client.Views
                             incomingCallDialog.ShowDialog();
                         });
                     }
-
                     if (messageType == "video_call")
                     {
                         System.Windows.Application.Current.Dispatcher.Invoke(() =>
@@ -175,6 +187,7 @@ namespace ChatApp.Client.Views
                     {
                         isBlocked = false;
                     }
+
                 });
                 _isNotificationHubConnected = true;
             }
@@ -195,6 +208,8 @@ namespace ChatApp.Client.Views
                 await _notificationHub.DisconnectAsync();
                 _isNotificationHubConnected = false;
             }
+
+            AppContext.CurrentChatEmail = null;
         }
 
         private void UpdateToUserStatus(string email, string status)
@@ -228,7 +243,7 @@ namespace ChatApp.Client.Views
             {
                 byte[] data = System.Text.Encoding.UTF8.GetBytes(message);
                 await _chatOneOnOneHub.SendMessageAsync(_toEmail, data, "text", DateTime.Now);
-                await _notificationHub.SendNotification(_fromEmail, [_toEmail], "Có tin nhắn mới", "message");
+                await _notificationHub.SendNotification(_fromEmail, [_toEmail], $"{_userInfo.FullName}||{message}||{_fromEmail}", "single_message");
                 
                 // Clear the RichTextBox after sending
                 TextMess.Document.Blocks.Clear();
@@ -473,7 +488,7 @@ namespace ChatApp.Client.Views
             byte[] fileBytes = File.ReadAllBytes(filePath);
 
             await _chatOneOnOneHub.SendMessageAsync(_toEmail, fileBytes, "file", DateTime.Now, fileName);
-            await _notificationHub.SendNotification(_fromEmail, [_toEmail], "Có tin nhắn mới", "message");
+            await _notificationHub.SendNotification(_fromEmail, [_toEmail], $"{_userInfo.FullName}||Gửi bạn một file||{_fromEmail}", "single_message");
         }
 
         private async void SendImg_Click(object sender, RoutedEventArgs e)
@@ -492,7 +507,7 @@ namespace ChatApp.Client.Views
             byte[] fileBytes = File.ReadAllBytes(filePath);
 
             await _chatOneOnOneHub.SendMessageAsync(_toEmail, fileBytes, "image", DateTime.Now, fileName);
-            await _notificationHub.SendNotification(_fromEmail, [_toEmail], "Có tin nhắn mới", "message");
+            await _notificationHub.SendNotification(_fromEmail, [_toEmail], $"{_userInfo.FullName}||Gửi bạn một hình ảnh||{_fromEmail}", "single_message");
         }
 
         private void BackButton_Click(object sender, RoutedEventArgs e)
@@ -610,6 +625,8 @@ namespace ChatApp.Client.Views
                     DateTime.Now
                 );
 
+                await _notificationHub.SendNotification(_fromEmail, [_toEmail], $"{_userInfo.FullName} || Bạn có một tin nhắn mới", "single_message");
+
                 EmojiPopup.IsOpen = false;
             }
         }
@@ -620,30 +637,35 @@ namespace ChatApp.Client.Views
         }
 
         //nút voice call
-        private void CallButton_Click(object sender, RoutedEventArgs e)
+        private async void CallButton_Click(object sender, RoutedEventArgs e)
         {
             if (isBlocked)
             {
                 MessageBox.Show("Bạn đã bị người này block");
                 return;
             }
-            CallingDialog callingDialog = new CallingDialog(_fromEmail, _toEmail, UserName.Text);
+
+            CallingDialog callingDialog = new CallingDialog(_fromEmail, _toEmail, _friendInfo.FullName);
 
             callingDialog.ShowDialog();
+
+            await _notificationHub.SendNotification(_fromEmail, [_toEmail], $"{_fromEmail}||{_toEmail}||{_friendInfo.FullName}", "single_voice_call");
 
         }
 
         //nút video call
-        private void Button_Click(object sender, RoutedEventArgs e)
+        private async void Button_Click(object sender, RoutedEventArgs e)
         {
             if (isBlocked)
             {
                 MessageBox.Show("Bạn đã bị người này block");
                 return;
             }
-            VideoCallDialog videoCallDialog = new VideoCallDialog(_fromEmail, _toEmail, UserName.Text);
+            VideoCallDialog videoCallDialog = new VideoCallDialog(_fromEmail, _toEmail, _friendInfo.FullName);
 
             videoCallDialog.ShowDialog();
+
+            await _notificationHub.SendNotification(_fromEmail, [_toEmail], $"{_fromEmail}||{_toEmail}||{_friendInfo.FullName}", "single_video_call");
         }
     }
 }
