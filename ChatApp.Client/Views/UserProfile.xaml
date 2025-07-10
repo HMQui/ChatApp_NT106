@@ -69,7 +69,7 @@
                     <Button Content="Đổi Mật Khẩu" Width="200" Height="40"
                             Background="#EEF2FF" Foreground="#3B82F6"
                             FontWeight="Bold" BorderBrush="#3B82F6" BorderThickness="1"
-                            Margin="20 10" Click="Button_Click" />
+                            Margin="20 10"/>
                     <Button Content="Đổi Thông Tin Cá Nhân" Width="200" Height="41"
                             Background="#EEF2FF" Foreground="#3B82F6"
                             FontWeight="Bold" BorderBrush="#3B82F6" BorderThickness="1" Click="Button_Click_1"
