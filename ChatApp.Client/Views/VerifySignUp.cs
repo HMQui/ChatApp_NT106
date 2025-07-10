@@ -178,10 +178,8 @@ namespace ChatApp.Client.Views
                         {
                             writer.Write(token);
                         }
-                        using (MainForm mainForm = new MainForm(emailAddress))
-                        {
-                            mainForm.ShowDialog();
-                        }
+                        MainForm_1 mainForm = new MainForm_1(emailAddress);
+                        mainForm.ShowDialog();
                         this.Close();
                     };
                     timer.Start();

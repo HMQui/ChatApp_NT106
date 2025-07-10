@@ -210,7 +210,7 @@ namespace ChatApp.Client.Views
             {
                 writer.Write(token);
             }
-
+            this.Hide();
             MainForm_1 mainForm = new MainForm_1(email);
             mainForm.ShowDialog();
             this.Close();
@@ -310,7 +310,5 @@ namespace ChatApp.Client.Views
             return value;
         }
     }
-   
-
    
 }

@@ -25,7 +25,6 @@ namespace ChatApp.Server.Hubs
         public async Task SendMessage(string receiverEmail, byte[] data, string senderEmail, string messageType, DateTime sendAt, string originalFileName = "")
         {
             string payload = string.Empty;
-            Console.WriteLine(messageType);
 
             if (messageType == "text")
             {
@@ -45,7 +44,11 @@ namespace ChatApp.Server.Hubs
                 string fileUrl = await _s3Service.UploadFileAsync(data, fileName);
                 MessageDAO.Instance.InsertMessage(senderEmail, receiverEmail, fileUrl, "file", sendAt);
                 payload = fileUrl;
-
+            }
+            else if (messageType == "emoji")
+            {
+                payload = Encoding.UTF8.GetString(data);
+                MessageDAO.Instance.InsertMessage(senderEmail, receiverEmail, payload, "emoji", sendAt);
             }
 
 
@@ -61,8 +64,6 @@ namespace ChatApp.Server.Hubs
                     .SendAsync("ReceiveMessage", senderEmail, payload, messageType, sendAt);
             }
         }
-
-
 
         public override async Task OnDisconnectedAsync(Exception? exception)
         {

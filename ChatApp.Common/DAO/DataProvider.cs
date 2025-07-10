@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Data;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Data;
 using Microsoft.Data.SqlClient;
 
 namespace ChatApp.Common.DAO
@@ -18,8 +13,7 @@ namespace ChatApp.Common.DAO
         }
         private DataProvider() { }
 
-
-        private string connectionString = "Data Source=HUYNHHUY\\SQLEXPRESS;Initial Catalog=ChatApp;Integrated Security=True;Encrypt=True;Trust Server Certificate=True";
+        private string connectionString = "Data Source=HUYNHQUI\\SQLEXPRESS;Initial Catalog=CHAT_APP;Integrated Security=True;Encrypt=True;Trust Server Certificate=True";
 
         public DataTable ExcuteQuery(string query, object[] parameters = null)
         {
