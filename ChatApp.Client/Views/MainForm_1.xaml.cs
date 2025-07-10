@@ -9,13 +9,14 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
+using System.Windows.Media.Effects;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
+using Color = System.Windows.Media.Color;
 using Cursors = System.Windows.Input.Cursors;
 using FontFamily = System.Windows.Media.FontFamily;
 using Path = System.IO.Path;
 using Point = System.Windows.Point;
-using TextBox = System.Windows.Controls.TextBox;
 
 namespace ChatApp.Client.Views
 {
@@ -38,6 +39,7 @@ namespace ChatApp.Client.Views
             _circularPictureBoxService = new CircularPictureBoxService();
 
             ListFriend();
+            ListGroups();
         }
 
         private void ListFriend()
@@ -63,6 +65,123 @@ namespace ChatApp.Client.Views
                     FriendListPanel.Children.Add(CreateFriendPanel(friend));
                 }
             }
+        }
+
+        private void ListGroups()
+        {
+            GroupsContent.Children.Clear();
+            var groups = GroupDAO.Instance.GetGroups(email);
+            if (groups == null || groups.Count == 0)
+            {
+                TextBlock textBlock = new TextBlock
+                {
+                    Text = "Không có nhóm nào",
+                    FontFamily = new FontFamily("Segoe UI"),
+                    FontStyle = FontStyles.Italic,
+                    FontSize = 14,
+                    Margin = new Thickness(10)
+                };
+                GroupsContent.Children.Add(textBlock);
+            }
+            else
+            {
+                foreach (var group in groups)
+                {
+                    GroupsContent.Children.Add(CreateGroupPanel(group));
+                }
+            }
+        }
+
+        private Border CreateGroupPanel(GroupDTO group)
+        {
+            string avatarUrl = string.IsNullOrEmpty(group.AvatarUrl) ? defaultAvatarUrl : group.AvatarUrl;
+
+            var border = new Border
+            {
+                Style = (Style)FindResource("FriendPanel"),
+                Cursor = Cursors.Hand
+            };
+
+            var grid = new Grid();
+            grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(50) });
+            grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+            grid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+
+            var ellipse = new Ellipse { Width = 40, Height = 40, Margin = new Thickness(5) };
+            try
+            {
+                BitmapImage bitmap = new BitmapImage();
+                bitmap.BeginInit();
+                bitmap.UriSource = new Uri(avatarUrl, UriKind.RelativeOrAbsolute);
+                bitmap.EndInit();
+                ellipse.Fill = new ImageBrush { ImageSource = bitmap };
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error loading avatar for {group.GroupName}: {ex.Message}");
+                BitmapImage bitmap = new BitmapImage();
+                bitmap.BeginInit();
+                bitmap.UriSource = new Uri(defaultAvatarUrl, UriKind.RelativeOrAbsolute);
+                bitmap.EndInit();
+                ellipse.Fill = new ImageBrush { ImageSource = bitmap };
+            }
+            Grid.SetColumn(ellipse, 0);
+
+            var stackPanel = new StackPanel { Margin = new Thickness(10, 0, 0, 0) };
+            var nameTextBlock = new TextBlock
+            {
+                Text = group.GroupName,
+                FontFamily = new FontFamily("Segoe UI"),
+                FontWeight = FontWeights.Bold,
+                FontSize = 14
+            };
+            stackPanel.Children.Add(nameTextBlock);
+            Grid.SetColumn(stackPanel, 1);
+
+            var statusTextBlock = new TextBlock
+            {
+                Name = "StatusTextBlock",
+                Text = group.Status == "online" ? "🟢 Online" : "⚫ Offline",
+                FontFamily = new FontFamily("Segoe UI"),
+                FontStyle = FontStyles.Italic,
+                FontSize = 12,
+                Foreground = group.Status == "online" ? new SolidColorBrush(Colors.Green) : new SolidColorBrush(Colors.Gray),
+                Margin = new Thickness(10, 0, 10, 0),
+                VerticalAlignment = VerticalAlignment.Center
+            };
+            Grid.SetColumn(statusTextBlock, 2);
+
+            grid.Children.Add(ellipse);
+            grid.Children.Add(stackPanel);
+            grid.Children.Add(statusTextBlock);
+
+            border.MouseEnter += (s, e) =>
+            {
+                border.Background = new SolidColorBrush(Color.FromArgb(229, 229, 229, 229)); 
+            };
+            border.MouseLeave += (s, e) =>
+            {
+                border.Background = null;
+            };
+
+            border.Child = grid;
+
+            border.MouseDown += (s, e) => OpenGroupChat(group.GroupId);
+
+            return border;
+        }
+
+        private void OpenGroupChat(string groupId)
+        {
+            _userService.SetOfflineStatusInDB(email);
+            if (_statusHub != null)
+            {
+                _statusHub.DisconnectAsync().Wait();
+            }
+            this.Hide();
+            ChatWindow chatRoom = new ChatWindow(email, groupId, "group");
+            chatRoom.ShowDialog();
+            this.Close();
         }
 
         private Border CreateFriendPanel(UserFriendDTO user)
@@ -137,6 +256,16 @@ namespace ChatApp.Client.Views
             grid.Children.Add(stackPanel);
             grid.Children.Add(statusTextBlock);
 
+            // Thêm hiệu ứng hover
+            border.MouseEnter += (s, e) =>
+            {
+                border.Background = new SolidColorBrush(Color.FromArgb(229, 229, 229, 229)); 
+            };
+            border.MouseLeave += (s, e) =>
+            {
+                border.Background = null;
+            };
+
             border.Child = grid;
 
             border.MouseDown += async (s, e) =>
@@ -152,62 +281,6 @@ namespace ChatApp.Client.Views
             };
 
             return border;
-        }
-
-        private void SearchButton_Click(object sender, RoutedEventArgs e)
-        {
-            UsersContent.Children.Clear();
-
-            string searchText = SearchTextBox.Text.Trim();
-            if (string.IsNullOrWhiteSpace(searchText) || searchText == "Tìm kiếm")
-            {
-                var friends = FriendDAO.Instance.GetFriendsWithStatus(email);
-                foreach (var friend in friends)
-                {
-                    TextBlock textBlock = new TextBlock
-                    {
-                        Text = $"{friend.FullName} ({friend.Email})",
-                        FontFamily = new FontFamily("Segoe UI"),
-                        FontSize = 14,
-                        Margin = new Thickness(5)
-                    };
-                    UsersContent.Children.Add(textBlock);
-                }
-            }
-            else
-            {
-                var friends = FriendDAO.Instance.GetFriendsWithStatus(email);
-                var filteredFriends = friends.Where(f =>
-                    f.FullName.ToLower().Contains(searchText.ToLower()) ||
-                    f.Email.ToLower().Contains(searchText.ToLower()));
-
-                if (filteredFriends.Any())
-                {
-                    foreach (var friend in filteredFriends)
-                    {
-                        TextBlock textBlock = new TextBlock
-                        {
-                            Text = $"{friend.FullName} ({friend.Email})",
-                            FontFamily = new FontFamily("Segoe UI"),
-                            FontSize = 14,
-                            Margin = new Thickness(5)
-                        };
-                        UsersContent.Children.Add(textBlock);
-                    }
-                }
-                else
-                {
-                    TextBlock noResult = new TextBlock
-                    {
-                        Text = "Không tìm thấy kết quả.",
-                        FontFamily = new FontFamily("Segoe UI"),
-                        FontSize = 14,
-                        Margin = new Thickness(5),
-                        Foreground = System.Windows.Media.Brushes.Red
-                    };
-                    UsersContent.Children.Add(noResult);
-                }
-            }
         }
 
         private async void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
@@ -268,19 +341,18 @@ namespace ChatApp.Client.Views
                 Dispatcher.Invoke(() => UpdateFriendStatus(friendEmail, status));
             });
 
-            // Load user avatar
             try
             {
                 BitmapImage bitmap = new BitmapImage();
                 bitmap.BeginInit();
                 bitmap.UriSource = new Uri(defaultAvatarUrl, UriKind.RelativeOrAbsolute);
                 bitmap.EndInit();
-                ThumbImageBrush.ImageSource = bitmap; // Gán vào ImageBrush
+                ThumbImageBrush.ImageSource = bitmap;
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"Error loading default avatar for {email}: {ex.Message}");
-                ThumbImageBrush.ImageSource = null; // Clear image on error
+                ThumbImageBrush.ImageSource = null;
             }
         }
 
@@ -303,7 +375,6 @@ namespace ChatApp.Client.Views
             this.Close();
         }
 
-
         private async void ThumbImage_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
         {
             _userService.SetOfflineStatusInDB(email);
@@ -316,10 +387,6 @@ namespace ChatApp.Client.Views
             UserProfile userProfile = new UserProfile(email);
             userProfile.ShowDialog();
             this.Close();
-        }
-
-        private void ThumbImage_Loaded(object sender, RoutedEventArgs e)
-        {
         }
 
         private async void ManageFriendButton_Click(object sender, RoutedEventArgs e)
@@ -336,24 +403,9 @@ namespace ChatApp.Client.Views
             this.Close();
         }
 
-        private void SearchTextBox_GotFocus(object sender, RoutedEventArgs e)
+        private async void CreateGroupButton_Click(object sender, RoutedEventArgs e)
         {
-            TextBox textBox = sender as TextBox;
-            if (textBox.Text == "Tìm kiếm")
-            {
-                textBox.Text = string.Empty;
-                textBox.Foreground = System.Windows.Media.Brushes.Black; // Đổi màu chữ khi nhập
-            }
-        }
-
-        private void SearchTextBox_LostFocus(object sender, RoutedEventArgs e)
-        {
-            TextBox textBox = sender as TextBox;
-            if (string.IsNullOrWhiteSpace(textBox.Text))
-            {
-                textBox.Text = "Tìm kiếm";
-                textBox.Foreground = System.Windows.Media.Brushes.Gray; // Khôi phục màu placeholder
-            }
+            // logic
         }
     }
 }

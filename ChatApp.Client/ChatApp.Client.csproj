@@ -12,6 +12,7 @@
   <ItemGroup>
     <None Remove="Assets\Icons\icons8-eye-30.png" />
     <None Remove="Assets\Icons\icons8-hide-30.png" />
+    <None Remove="Assets\Images\add-group.png" />
     <None Remove="Assets\Images\arrow.png" />
     <None Remove="Assets\Images\attach-file.png" />
     <None Remove="Assets\Images\back-22-64.png" />
@@ -53,6 +54,7 @@
   <ItemGroup>
     <Resource Include="Assets\Icons\icons8-eye-30.png" />
     <Resource Include="Assets\Icons\icons8-hide-30.png" />
+    <Resource Include="Assets\Images\add-group.png" />
     <Resource Include="Assets\Images\arrow.png" />
     <Resource Include="Assets\Images\attach-file.png" />
     <Resource Include="Assets\Images\back-22-64.png" />
