@@ -34,7 +34,7 @@ namespace ChatApp.Client.Views
 
         public void InitUI()
         {
-            if (_userProfile != null)
+            /*if (_userProfile != null)
             {
                 // Tên và email
                 FullNameTextBlock.Text = _userProfile.FullName;
@@ -67,7 +67,7 @@ namespace ChatApp.Client.Views
             {
                 MessageBox.Show("Không tìm thấy người dùng.");
                 Close();
-            }
+            }*/
         }
 
         private async void BackButton_Click(object sender, RoutedEventArgs e)
@@ -89,6 +89,11 @@ namespace ChatApp.Client.Views
         }
 
         private void Button_Click_1(object sender, RoutedEventArgs e)
+        {
+
+        }
+
+        private void Button_Click(object sender, RoutedEventArgs e)
         {
 
         }

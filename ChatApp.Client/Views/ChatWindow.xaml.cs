@@ -20,6 +20,19 @@ namespace ChatApp.Client.Views
     /// <summary>
     /// Interaction logic for ChatWindow.xaml
     /// </summary>
+    public class EmojiItem
+    {
+        public string Emoji { get; set; }
+        public string Color { get; set; }
+
+        public EmojiItem(string emoji, string color)
+        {
+            Emoji = emoji;
+            Color = color;
+        }
+    }
+
+
     public partial class ChatWindow : Window
     {
         private readonly string _fromEmail;
@@ -36,6 +49,30 @@ namespace ChatApp.Client.Views
         private int _currentEmojiPage = 1;
         private const int EmojisPerPage = 40;
         private bool _isNotificationHubConnected = false;
+        private readonly List<EmojiItem> _emojiList = new List<EmojiItem>
+        {
+            new EmojiItem("😀", "#FFEB3B"),     // vàng tươi
+            new EmojiItem("😂", "#4CAF50"),     // xanh lá
+            new EmojiItem("😍", "#E91E63"),     // hồng đậm
+            new EmojiItem("🥰", "#FF4081"),     // hồng tươi
+            new EmojiItem("😭", "#2196F3"),     // xanh dương
+            new EmojiItem("🤔", "#9C27B0"),     // tím
+            new EmojiItem("😎", "#FFC107"),     // vàng cam
+            new EmojiItem("👍", "#009688"),     // teal
+            new EmojiItem("🔥", "#FF5722"),     // cam lửa
+            new EmojiItem("🎉", "#673AB7"),     // tím đậm
+            new EmojiItem("💯", "#F44336"),     // đỏ
+            new EmojiItem("❤️", "#F44336"),     // đỏ
+            new EmojiItem("🙌", "#3F51B5"),     // xanh tím
+            new EmojiItem("😡", "#D32F2F"),     // đỏ đậm
+            new EmojiItem("🤯", "#FF9800"),     // cam
+            new EmojiItem("🥳", "#FFEB3B"),     // vàng tươi
+            new EmojiItem("👀", "#607D8B"),     // xám xanh
+            new EmojiItem("😱", "#00BCD4"),     // xanh cyan
+            new EmojiItem("🤷‍♂️", "#795548"),  // nâu
+            new EmojiItem("👋", "#8BC34A"),     // xanh non
+            new EmojiItem("🙏", "#9C27B0"),     // tím
+        };
 
         public ChatWindow(string fromEmail, string toEmail, string blocked)
         {
@@ -63,14 +100,8 @@ namespace ChatApp.Client.Views
             StatusOnOff.Foreground = _user.Status == "online" ? SWM.Brushes.Green : SWM.Brushes.Red;
             StatusOnOff.Text = _user.Status == "online" ? "Online" : "Offline";
 
-            // Load emoji files
-            /*string emojiDirectory = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets", "emoji");
-            _emojiFiles = Directory.GetFiles(emojiDirectory, "*.png")
-                                 .OrderBy(f => int.Parse(Path.GetFileNameWithoutExtension(f)))
-                                 .ToList();*/
-
             // Load initial emoji page
-            //LoadEmojiPage(1);
+            LoadEmojiPage(1);
 
             RenderMessages(_messages, _fromEmail, _toEmail);
         }
@@ -180,6 +211,7 @@ namespace ChatApp.Client.Views
         {
 
         }
+
         private async void SendTextMess_Click(object sender, RoutedEventArgs e)
         {
             if (isBlocked)
@@ -212,6 +244,7 @@ namespace ChatApp.Client.Views
                 var isFromMe = msg.SenderEmail == _fromEmail;
                 var align = isFromMe ? HA.Right : HA.Left;
                 var bgColor = isFromMe ? "#C8E6C9" : "#FFFFFF";
+
                 var container = new StackPanel
                 {
                     HorizontalAlignment = align,
@@ -219,54 +252,85 @@ namespace ChatApp.Client.Views
                     Margin = new Thickness(0, 5, 0, 5)
                 };
 
-                Border border = new Border
-                {
-                    Background = (SWM.Brush)new BrushConverter().ConvertFromString(bgColor),
-                    CornerRadius = new CornerRadius(10),
-                    Padding = new Thickness(10),
-                };
+                UIElement messageElement;
 
-                if (msg.MessageType == "text")
+                if (msg.MessageType == "emoji")
                 {
-                    border.Child = new TextBlock { Text = msg.Message };
-                }
-                else if (msg.MessageType == "emoji")
-                {
-                    border.Child = new TextBlock { Text = msg.Message}; 
-                }
-                else if (msg.MessageType == "image")
-                {
-                    border.Padding = new Thickness(5); // nhỏ hơn để phù hợp hình
-                    border.Child = new SWC.Image
+                    string emojiUnicode = "";
+                    string colorCode = "#000000"; // default black
+
+                    if (!string.IsNullOrEmpty(msg.Message) && msg.Message.Contains("|"))
                     {
-                        Source = new BitmapImage(new Uri(msg.Message)),
-                        Height = 150,
-                        Stretch = Stretch.UniformToFill
+                        var parts = msg.Message.Split('|');
+                        emojiUnicode = parts[0];
+                        colorCode = parts.Length > 1 ? parts[1] : "#000000";
+                    }
+                    else
+                    {
+                        emojiUnicode = msg.Message;
+                    }
+
+                    messageElement = new TextBlock
+                    {
+                        Text = emojiUnicode,
+                        FontFamily = new SWM.FontFamily("Segoe UI Emoji"),
+                        FontSize = 72,
+                        Background = SWM.Brushes.Transparent,
+                        Padding = new Thickness(0),
+                        Margin = new Thickness(0),
+                        TextWrapping = TextWrapping.Wrap,
+                        Foreground = (SWM.Brush)new BrushConverter().ConvertFromString(colorCode)
                     };
+
+                    container.Children.Add(messageElement);
                 }
-                else if (msg.MessageType == "file")
+                else
                 {
-                    var filePanel = new StackPanel();
-                    filePanel.Children.Add(new TextBlock
+                    var border = new Border
                     {
-                        Text = System.IO.Path.GetFileName(msg.Message),
-                        FontWeight = FontWeights.Bold
-                    });
-
-                    var downloadBtn = new SWC.Button
-                    {
-                        Content = "Tải file",
-                        Width = 100,
-                        Margin = new Thickness(0, 5, 0, 0),
-                        Tag = msg.Message,
+                        Background = (SWM.Brush)new BrushConverter().ConvertFromString(bgColor),
+                        CornerRadius = new CornerRadius(10),
+                        Padding = new Thickness(10)
                     };
-                    downloadBtn.Click += DownloadFile_Click;
-                    filePanel.Children.Add(downloadBtn);
 
-                    border.Child = filePanel;
+                    if (msg.MessageType == "text")
+                    {
+                        border.Child = new TextBlock { Text = msg.Message };
+                    }
+                    else if (msg.MessageType == "image")
+                    {
+                        border.Padding = new Thickness(5);
+                        border.Child = new SWC.Image
+                        {
+                            Source = new BitmapImage(new Uri(msg.Message)),
+                            Height = 150,
+                            Stretch = Stretch.UniformToFill
+                        };
+                    }
+                    else if (msg.MessageType == "file")
+                    {
+                        var filePanel = new StackPanel();
+                        filePanel.Children.Add(new TextBlock
+                        {
+                            Text = System.IO.Path.GetFileName(msg.Message),
+                            FontWeight = FontWeights.Bold
+                        });
+
+                        var downloadBtn = new SWC.Button
+                        {
+                            Content = "Tải file",
+                            Width = 100,
+                            Margin = new Thickness(0, 5, 0, 0),
+                            Tag = msg.Message
+                        };
+                        downloadBtn.Click += DownloadFile_Click;
+                        filePanel.Children.Add(downloadBtn);
+
+                        border.Child = filePanel;
+                    }
+
+                    container.Children.Add(border);
                 }
-
-                container.Children.Add(border);
 
                 // Thêm thời gian
                 var timestamp = new TextBlock
@@ -297,55 +361,86 @@ namespace ChatApp.Client.Views
                 Margin = new Thickness(0, 5, 0, 5)
             };
 
-            Border border = new Border
-            {
-                Background = (SWM.Brush)new BrushConverter().ConvertFromString(bgColor),
-                CornerRadius = new CornerRadius(10),
-                Padding = new Thickness(10)
-            };
+            UIElement messageElement;
 
-            if (msg.MessageType == "text")
+            if (msg.MessageType == "emoji")
             {
-                border.Child = new TextBlock { Text = msg.Message };
+                string emojiUnicode = "";
+                string colorCode = "#000000"; // default black
 
-            }
-            else if (msg.MessageType == "emoji")
-            {
-                border.Child = new TextBlock { Text = msg.Message };
-            }
-            else if (msg.MessageType == "image")
-            {
-                border.Padding = new Thickness(5);
-                border.Child = new SWC.Image
+                if (!string.IsNullOrEmpty(msg.Message) && msg.Message.Contains("|"))
                 {
-                    Source = new BitmapImage(new Uri(msg.Message)),
-                    Height = 150,
-                    Stretch = Stretch.UniformToFill
+                    var parts = msg.Message.Split('|');
+                    emojiUnicode = parts[0];
+                    colorCode = parts.Length > 1 ? parts[1] : "#000000";
+                }
+                else
+                {
+                    emojiUnicode = msg.Message;
+                }
+
+                messageElement = new TextBlock
+                {
+                    Text = emojiUnicode,
+                    FontFamily = new SWM.FontFamily("Segoe UI Emoji"),
+                    FontSize = 72,
+                    Background = SWM.Brushes.Transparent,
+                    Padding = new Thickness(0),
+                    Margin = new Thickness(0),
+                    TextWrapping = TextWrapping.Wrap,
+                    Foreground = (SWM.Brush)new BrushConverter().ConvertFromString(colorCode)
                 };
+
+                container.Children.Add(messageElement);
             }
-            else if (msg.MessageType == "file")
+            else
             {
-                var filePanel = new StackPanel();
-                filePanel.Children.Add(new TextBlock
+                // Những message khác vẫn giữ Border
+                var border = new Border
                 {
-                    Text = System.IO.Path.GetFileName(msg.Message),
-                    FontWeight = FontWeights.Bold
-                });
-
-                var downloadBtn = new SWC.Button
-                {
-                    Content = "Tải file",
-                    Width = 100,
-                    Margin = new Thickness(0, 5, 0, 0),
-                    Tag = msg.Message
+                    Background = (SWM.Brush)new BrushConverter().ConvertFromString(bgColor),
+                    CornerRadius = new CornerRadius(10),
+                    Padding = new Thickness(10)
                 };
-                downloadBtn.Click += DownloadFile_Click;
-                filePanel.Children.Add(downloadBtn);
 
-                border.Child = filePanel;
+                if (msg.MessageType == "text")
+                {
+                    border.Child = new TextBlock { Text = msg.Message };
+                }
+                else if (msg.MessageType == "image")
+                {
+                    border.Padding = new Thickness(5);
+                    border.Child = new SWC.Image
+                    {
+                        Source = new BitmapImage(new Uri(msg.Message)),
+                        Height = 150,
+                        Stretch = Stretch.UniformToFill
+                    };
+                }
+                else if (msg.MessageType == "file")
+                {
+                    var filePanel = new StackPanel();
+                    filePanel.Children.Add(new TextBlock
+                    {
+                        Text = System.IO.Path.GetFileName(msg.Message),
+                        FontWeight = FontWeights.Bold
+                    });
+
+                    var downloadBtn = new SWC.Button
+                    {
+                        Content = "Tải file",
+                        Width = 100,
+                        Margin = new Thickness(0, 5, 0, 0),
+                        Tag = msg.Message
+                    };
+                    downloadBtn.Click += DownloadFile_Click;
+                    filePanel.Children.Add(downloadBtn);
+
+                    border.Child = filePanel;
+                }
+
+                container.Children.Add(border);
             }
-
-            container.Children.Add(border);
 
             var timestamp = new TextBlock
             {
@@ -399,6 +494,7 @@ namespace ChatApp.Client.Views
             await _chatOneOnOneHub.SendMessageAsync(_toEmail, fileBytes, "image", DateTime.Now, fileName);
             await _notificationHub.SendNotification(_fromEmail, [_toEmail], "Có tin nhắn mới", "message");
         }
+
         private void BackButton_Click(object sender, RoutedEventArgs e)
         {
             this.Hide();
@@ -412,11 +508,18 @@ namespace ChatApp.Client.Views
         {
             // Handle text changes if needed
         }
+
         private void EmojiButton_Click(object sender, RoutedEventArgs e)
         {
-            EmojiPopup.IsOpen = true;
-            LoadEmojiPage(1); // Load the first page of emojis when the popup opens
-
+            if (EmojiPopup.IsOpen)
+            {
+                EmojiPopup.IsOpen = false;
+            }
+            else
+            {
+                EmojiPopup.IsOpen = true;
+                LoadEmojiPage(1);
+            }
         }
 
         private void LoadEmojiPage(int page)
@@ -425,42 +528,41 @@ namespace ChatApp.Client.Views
             _currentEmojiPage = page;
 
             int startIndex = (page - 1) * EmojisPerPage;
-            int endIndex = Math.Min(startIndex + EmojisPerPage, _emojiFiles.Count);
+            int endIndex = Math.Min(startIndex + EmojisPerPage, _emojiList.Count);
 
             for (int i = startIndex; i < endIndex; i++)
             {
-                var emojiButton = new SWC.Button
+                var emojiItem = _emojiList[i];
+
+                var emojiText = new TextBlock
                 {
-                    Width = 32,
-                    Height = 32,
-                    Margin = new Thickness(2),
-                    Tag = _emojiFiles[i],
-                    Padding = new Thickness(2),
+                    Text = emojiItem.Emoji,
+                    FontFamily = new SWM.FontFamily("Segoe UI Emoji"),
+                    FontSize = 32,
+                    Foreground = (SWM.Brush)new BrushConverter().ConvertFromString(emojiItem.Color),
                     Background = SWM.Brushes.Transparent,
-                    BorderThickness = new Thickness(0)
+                    HorizontalAlignment = HA.Center,
+                    VerticalAlignment = VerticalAlignment.Center
                 };
 
-                try
+                var emojiButton = new SWC.Button
                 {
-                    var image = new SWC.Image
-                    {
-                        Source = new BitmapImage(new Uri(_emojiFiles[i])),
-                        Width = 24,
-                        Height = 24,
-                        Stretch = Stretch.Uniform
-                    };
-                    emojiButton.Content = image;
-                }
-                catch
-                {
-                    emojiButton.Content = "?";
-                }
+                    Width = 40,
+                    Height = 40,
+                    Margin = new Thickness(2),
+                    Content = _emojiList[i].Emoji,
+                    FontSize = 24,
+                    Background = SWM.Brushes.Transparent,
+                    BorderThickness = new Thickness(0),
+                    Tag = _emojiList[i].Emoji,
+                    Foreground = (SWM.Brush)new BrushConverter().ConvertFromString(_emojiList[i].Color)
+                };
 
                 emojiButton.Click += EmojiSelected_Click;
                 EmojiPanel.Children.Add(emojiButton);
             }
 
-            EmojiPageText.Text = $"Page {page} of {Math.Ceiling(_emojiFiles.Count / (double)EmojisPerPage)}";
+            EmojiPageText.Text = $"Page {page} of {Math.Ceiling(_emojiList.Count / (double)EmojisPerPage)}";
         }
 
         private void PreviousEmojiPage_Click(object sender, RoutedEventArgs e)
@@ -480,55 +582,38 @@ namespace ChatApp.Client.Views
             }
         }
 
-        private void EmojiSelected_Click(object sender, RoutedEventArgs e)
+        private async void EmojiSelected_Click(object sender, RoutedEventArgs e)
         {
+            if (isBlocked)
+            {
+                MessageBox.Show("Bạn đã bị người này block");
+                return;
+            }
+
             var button = sender as SWC.Button;
             if (button != null)
             {
-                string emojiPath = button.Tag.ToString();
+                string emojiUnicode = button.Tag?.ToString();
 
-                // Tạo hình ảnh emoji
-                var emojiImage = new SWC.Image
-                {
-                    Source = new BitmapImage(new Uri(emojiPath)),
-                    Width = 20,
-                    Height = 20,
-                    Stretch = Stretch.Uniform
-                };
+                var emojiItem = _emojiList.FirstOrDefault(x => x.Emoji == emojiUnicode);
+                string colorCode = (!string.IsNullOrEmpty(emojiItem?.Color))
+                    ? emojiItem.Color
+                    : "#000000";
 
-                var inlineContainer = new System.Windows.Documents.InlineUIContainer(emojiImage);
+                string payload = $"{emojiUnicode}|{colorCode}";
+                byte[] emojiBytes = System.Text.Encoding.UTF8.GetBytes(payload);
 
-                // Lấy vị trí con trỏ hiện tại
-                var caret = TextMess.CaretPosition;
+                await _chatOneOnOneHub.SendMessageAsync(
+                    _toEmail,
+                    emojiBytes,
+                    "emoji",
+                    DateTime.Now
+                );
 
-                // Đảm bảo caret nằm trong một Paragraph
-                Paragraph para = caret.Paragraph;
-                if (para == null)
-                {
-                    // Nếu chưa có Paragraph, thêm mới
-                    para = new Paragraph();
-                    TextMess.Document.Blocks.Add(para);
-                    caret = para.ContentStart;
-                }
-
-                // Chèn emoji vào vị trí con trỏ
-                Inline prevInline = caret.GetAdjacentElement(LogicalDirection.Backward) as Inline;
-                if (prevInline != null)
-                {
-                    para.Inlines.InsertAfter(prevInline, inlineContainer);
-                }
-                else
-                {
-                    para.Inlines.Add(inlineContainer);
-                }
-
-                // Đưa con trỏ ra sau emoji vừa chèn
-                TextMess.CaretPosition = inlineContainer.ElementEnd;
-                // Đặt focus lại vào RichTextBox
-                TextMess.Focus();
                 EmojiPopup.IsOpen = false;
             }
         }
+
         private void CloseEmojiPopup_Click(object sender, RoutedEventArgs e)
         {
             EmojiPopup.IsOpen = false;
@@ -537,6 +622,11 @@ namespace ChatApp.Client.Views
         //nút voice call
         private void CallButton_Click(object sender, RoutedEventArgs e)
         {
+            if (isBlocked)
+            {
+                MessageBox.Show("Bạn đã bị người này block");
+                return;
+            }
             CallingDialog callingDialog = new CallingDialog(_fromEmail, _toEmail, UserName.Text);
 
             callingDialog.ShowDialog();
@@ -546,12 +636,14 @@ namespace ChatApp.Client.Views
         //nút video call
         private void Button_Click(object sender, RoutedEventArgs e)
         {
+            if (isBlocked)
+            {
+                MessageBox.Show("Bạn đã bị người này block");
+                return;
+            }
             VideoCallDialog videoCallDialog = new VideoCallDialog(_fromEmail, _toEmail, UserName.Text);
 
             videoCallDialog.ShowDialog();
         }
     }
-
-   
-
 }
