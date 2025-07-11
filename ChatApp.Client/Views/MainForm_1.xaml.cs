@@ -9,10 +9,17 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
+using MediaBrushes = System.Windows.Media.Brushes;
 using Color = System.Windows.Media.Color;
 using Cursors = System.Windows.Input.Cursors;
 using FontFamily = System.Windows.Media.FontFamily;
 using Path = System.IO.Path;
+using SWM = System.Windows.Media;
+using SWC = System.Windows.Controls;
+using HA = System.Windows.HorizontalAlignment;
+using MessageBox = System.Windows.Forms.MessageBox;
+using Microsoft.VisualBasic.ApplicationServices;
+using WpfOrientation = System.Windows.Controls.Orientation;
 
 namespace ChatApp.Client.Views
 {
@@ -25,6 +32,10 @@ namespace ChatApp.Client.Views
         private CircularPictureBoxService _circularPictureBoxService;
         private readonly string defaultAvatarUrl = "https://miamistonesource.com/wp-content/uploads/2018/05/no-avatar-25359d55aa3c93ab3466622fd2ce712d1.jpg";
         private NotificationService _notificationService;
+        private NotificationHub _notificationHub;
+        private bool _isNotificationHubConnected = false;
+        private List<NoticeDTO> _notifications;
+        private bool _hasUnreadNotifications = false;
 
         public MainForm_1(string email)
         {
@@ -37,6 +48,235 @@ namespace ChatApp.Client.Views
 
             ListFriend();
             ListGroups();
+        }
+
+        private async void Window_Loaded(object sender, RoutedEventArgs e)
+        {
+            _notificationService = new NotificationService(email);
+            await _notificationService.ConnectNotificationHub();
+
+            await _statusHub.SetOnline(email);
+            _userService.SetOnlineStatusInDB(email);
+
+            await _statusHub.ConnectAsync((friendEmail, status) =>
+            {
+                Dispatcher.Invoke(() => UpdateFriendStatus(friendEmail, status));
+            });
+
+            ConnectNotificationHub();
+
+            try
+            {
+                BitmapImage bitmap = new BitmapImage();
+                bitmap.BeginInit();
+                bitmap.UriSource = new Uri(defaultAvatarUrl, UriKind.RelativeOrAbsolute);
+                bitmap.EndInit();
+                ThumbImageBrush.ImageSource = bitmap;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error loading default avatar for {email}: {ex.Message}");
+                ThumbImageBrush.ImageSource = null;
+            }
+            LoadNotifications();
+        }
+
+        private async void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
+        {
+            _userService.SetOfflineStatusInDB(email);
+            if (_statusHub != null)
+            {
+                await _statusHub.SetOffline(email);
+                await _statusHub.DisconnectAsync();
+            }
+            _notificationService.Dispose();
+
+            if (_notificationHub != null)
+            {
+                await _notificationHub.DisconnectAsync();
+                _isNotificationHubConnected = false;
+            }
+        }
+
+        private void UpdateNotificationBadge()
+        {
+            bool hasUnread = _notifications.Any(n => !n.IsSeen && !n.IsDeleted);
+            NotificationBadge.Visibility = hasUnread ? Visibility.Visible : Visibility.Collapsed;
+        }
+
+        private void LoadNotifications()
+        {
+            _notifications = NoticeDAO.Instance.GetNoticesByEmail(email);
+            Dispatcher.Invoke(() =>
+            {
+                UpdateNotificationBadge();
+            });
+        }
+
+        private void LoadNotificationList()
+        {
+            NotificationListPanel.Children.Clear();
+
+            var visibleNotifications = _notifications
+                .Where(n => !n.IsDeleted)
+                .OrderByDescending(n => n.CreatedAt);
+            if (_notifications == null || _notifications.Count == 0 || !_notifications.Any(n => !n.IsDeleted))
+            {
+                var textBlock = new TextBlock
+                {
+                    Text = "Không có thông báo mới.",
+                    FontSize = 14,
+                    FontWeight = FontWeights.SemiBold,
+                    Foreground = SWM.Brushes.Gray,
+                    HorizontalAlignment = HA.Center,
+                    VerticalAlignment = VerticalAlignment.Center,
+                    TextAlignment = TextAlignment.Center,
+                    Margin = new Thickness(10),
+                };
+
+                NotificationListPanel.Children.Clear();
+                NotificationListPanel.Children.Add(textBlock);
+                return;
+            }
+
+            foreach (var notice in visibleNotifications)
+            {
+                var border = new Border
+                {
+                    BorderThickness = new Thickness(0, 0, 0, 1),
+                    BorderBrush = new SolidColorBrush(Color.FromRgb(224, 224, 224)),
+                    Padding = new Thickness(8),
+                    Margin = new Thickness(0, 0, 0, 5)
+                };
+
+                var grid = new Grid();
+                grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+                grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+
+                var titleStack = new StackPanel
+                {
+                    Orientation = WpfOrientation.Horizontal
+                };
+
+                var titleBlock = new TextBlock
+                {
+                    Text = notice.Title,
+                    FontWeight = FontWeights.Bold,
+                    FontSize = 14,
+                    Foreground = new SolidColorBrush(Color.FromRgb(37, 37, 37))
+                };
+
+                var deleteButton = new SWC.Button
+                {
+                    Content = "X",
+                    Width = 20,
+                    Height = 20,
+                    Margin = new Thickness(5, 0, 0, 0),
+                    Background = SWM.Brushes.Transparent,
+                    BorderBrush = SWM.Brushes.Transparent,
+                    Foreground = SWM.Brushes.Gray,
+                    Cursor = Cursors.Hand,
+                    HorizontalAlignment = HA.Right,
+                    VerticalAlignment = VerticalAlignment.Top,
+                    Padding = new Thickness(0),
+                    Tag = notice
+                };
+                deleteButton.Click += DeleteNotificationButton_Click;
+
+                titleStack.Children.Add(titleBlock);
+                titleStack.Children.Add(deleteButton);
+
+                Grid.SetRow(titleStack, 0);
+                grid.Children.Add(titleStack);
+
+                var messageBlock = new TextBlock
+                {
+                    Text = notice.Message,
+                    TextWrapping = TextWrapping.Wrap,
+                    Margin = new Thickness(0, 4, 0, 0),
+                    Foreground = new SolidColorBrush(Color.FromRgb(85, 85, 85)),
+                    FontSize = 12
+                };
+
+                var timeBlock = new TextBlock
+                {
+                    Text = notice.CreatedAt.ToString("dd/MM/yyyy HH:mm"),
+                    FontSize = 10,
+                    Foreground = SWM.Brushes.Gray,
+                    Margin = new Thickness(0, 2, 0, 0)
+                };
+
+                var messageStack = new StackPanel();
+                messageStack.Children.Add(messageBlock);
+                messageStack.Children.Add(timeBlock);
+
+                Grid.SetRow(messageStack, 1);
+                grid.Children.Add(messageStack);
+
+                border.Child = grid;
+
+                NotificationListPanel.Children.Add(border);
+            }
+        }
+
+        private void NotificationButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (NotificationPopup.IsOpen)
+            {
+                NotificationPopup.IsOpen = false;
+            }
+            else
+            {
+                LoadNotificationList();
+                NotificationPopup.IsOpen = true;
+
+                foreach (var noti in _notifications)
+                {
+                    if (!noti.IsSeen)
+                    {
+                        noti.IsSeen = true;
+                        noti.SeenAt = DateTime.Now;
+
+                        NoticeDAO.Instance.MarkAsSeen(noti.Id, email);
+                    }
+                }
+
+                UpdateNotificationBadge();
+            }
+        }
+
+        private void DeleteNotificationButton_Click(object sender, RoutedEventArgs e)
+        {
+            var btn = sender as SWC.Button;
+            var notice = btn?.Tag as NoticeDTO;
+
+            if (notice != null)
+            {
+                notice.IsDeleted = true;
+                notice.DeletedAt = DateTime.Now;
+
+                NoticeDAO.Instance.SoftDeleteNotice(notice.Id, email);
+
+                LoadNotificationList();
+                UpdateNotificationBadge();
+            }
+        }
+
+        private async Task ConnectNotificationHub()
+        {
+            if (_notificationHub == null)
+            {
+                _notificationHub = new NotificationHub(email);
+            }
+
+            if (!_isNotificationHubConnected)
+            {
+                await _notificationHub.ConnectAsync((id, senderEmail, message, messageType) =>
+                {
+                    LoadNotifications();
+                });
+                _isNotificationHubConnected = true;
+            }
         }
 
         private void ListFriend()
@@ -67,7 +307,8 @@ namespace ChatApp.Client.Views
         private void ListGroups()
         {
             GroupsContent.Children.Clear();
-            var groups = GroupDAO.Instance.GetGroups(email);
+
+            var groups = GroupDAO.Instance.GetGroupsByUserEmail(email);
             if (groups == null || groups.Count == 0)
             {
                 TextBlock textBlock = new TextBlock
@@ -91,7 +332,7 @@ namespace ChatApp.Client.Views
 
         private Border CreateGroupPanel(GroupDTO group)
         {
-            string avatarUrl = string.IsNullOrEmpty(group.AvatarUrl) ? defaultAvatarUrl : group.AvatarUrl;
+            string avatarUrl = string.IsNullOrEmpty(group.Avatar_URL) ? defaultAvatarUrl : group.Avatar_URL;
 
             var border = new Border
             {
@@ -104,12 +345,14 @@ namespace ChatApp.Client.Views
             grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
             grid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
 
+            // Avatar ellipse
             var ellipse = new Ellipse { Width = 40, Height = 40, Margin = new Thickness(5) };
             try
             {
                 BitmapImage bitmap = new BitmapImage();
                 bitmap.BeginInit();
                 bitmap.UriSource = new Uri(avatarUrl, UriKind.RelativeOrAbsolute);
+                bitmap.CacheOption = BitmapCacheOption.OnLoad;
                 bitmap.EndInit();
                 ellipse.Fill = new ImageBrush { ImageSource = bitmap };
             }
@@ -119,12 +362,18 @@ namespace ChatApp.Client.Views
                 BitmapImage bitmap = new BitmapImage();
                 bitmap.BeginInit();
                 bitmap.UriSource = new Uri(defaultAvatarUrl, UriKind.RelativeOrAbsolute);
+                bitmap.CacheOption = BitmapCacheOption.OnLoad;
                 bitmap.EndInit();
                 ellipse.Fill = new ImageBrush { ImageSource = bitmap };
             }
             Grid.SetColumn(ellipse, 0);
 
-            var stackPanel = new StackPanel { Margin = new Thickness(10, 0, 0, 0) };
+            // StackPanel với thông tin group
+            var stackPanel = new StackPanel
+            {
+                Margin = new Thickness(10, 0, 0, 0)
+            };
+
             var nameTextBlock = new TextBlock
             {
                 Text = group.GroupName,
@@ -133,16 +382,35 @@ namespace ChatApp.Client.Views
                 FontSize = 14
             };
             stackPanel.Children.Add(nameTextBlock);
+
+            var createdByTextBlock = new TextBlock
+            {
+                Text = $"Created by: {group.CreatedBy}",
+                FontFamily = new FontFamily("Segoe UI"),
+                FontSize = 12,
+                Foreground = MediaBrushes.Gray
+            };
+            stackPanel.Children.Add(createdByTextBlock);
+
+            var createdAtTextBlock = new TextBlock
+            {
+                Text = $"Created at: {group.CreatedAt:dd/MM/yyyy}",
+                FontFamily = new FontFamily("Segoe UI"),
+                FontSize = 12,
+                Foreground = MediaBrushes.Gray
+            };
+            stackPanel.Children.Add(createdAtTextBlock);
+
             Grid.SetColumn(stackPanel, 1);
 
+            // Status - giả sử nhóm nào cũng "Active"
             var statusTextBlock = new TextBlock
             {
-                Name = "StatusTextBlock",
-                Text = group.Status == "online" ? "🟢 Online" : "⚫ Offline",
+                Text = "🟢 Active",
                 FontFamily = new FontFamily("Segoe UI"),
                 FontStyle = FontStyles.Italic,
                 FontSize = 12,
-                Foreground = group.Status == "online" ? new SolidColorBrush(Colors.Green) : new SolidColorBrush(Colors.Gray),
+                Foreground = new SolidColorBrush(Colors.Green),
                 Margin = new Thickness(10, 0, 10, 0),
                 VerticalAlignment = VerticalAlignment.Center
             };
@@ -154,7 +422,7 @@ namespace ChatApp.Client.Views
 
             border.MouseEnter += (s, e) =>
             {
-                border.Background = new SolidColorBrush(Color.FromArgb(229, 229, 229, 229)); 
+                border.Background = new SolidColorBrush(Color.FromRgb(229, 229, 229));
             };
             border.MouseLeave += (s, e) =>
             {
@@ -163,22 +431,17 @@ namespace ChatApp.Client.Views
 
             border.Child = grid;
 
-            border.MouseDown += (s, e) => OpenGroupChat(group.GroupId);
+            border.MouseDown += async (s, e) =>
+            {
+                _notificationService.Dispose();
+                await _notificationHub.DisconnectAsync();
+                GroupChatWindow chatRoom = new GroupChatWindow(email, group.Id);
+                this.Hide();
+                chatRoom.ShowDialog();
+                this.Close();
+            };
 
             return border;
-        }
-
-        private void OpenGroupChat(string groupId)
-        {
-            _userService.SetOfflineStatusInDB(email);
-            if (_statusHub != null)
-            {
-                _statusHub.DisconnectAsync().Wait();
-            }
-            this.Hide();
-            ChatWindow chatRoom = new ChatWindow(email, groupId, "group");
-            chatRoom.ShowDialog();
-            this.Close();
         }
 
         private Border CreateFriendPanel(UserFriendDTO user)
@@ -267,86 +530,15 @@ namespace ChatApp.Client.Views
 
             border.MouseDown += async (s, e) =>
             {
-                ChatWindow chatRoom = new ChatWindow(email, user.Email, user.FriendStatus);
-
-                if (_statusHub != null)
-                {
-                    await _statusHub.DisconnectAsync();
-                }
                 _notificationService.Dispose();
+                await _notificationHub.DisconnectAsync();
+                ChatWindow chatRoom = new ChatWindow(email, user.Email, user.FriendStatus);
                 this.Hide();
                 chatRoom.ShowDialog();
                 this.Close();
             };
 
             return border;
-        }
-
-        private void SearchButton_Click(object sender, RoutedEventArgs e)
-        {
-            UsersContent.Children.Clear();
-
-            string searchText = SearchTextBox.Text.Trim();
-            if (string.IsNullOrWhiteSpace(searchText) || searchText == "Tìm kiếm")
-            {
-                var friends = FriendDAO.Instance.GetFriendsWithStatus(email);
-                foreach (var friend in friends)
-                {
-                    TextBlock textBlock = new TextBlock
-                    {
-                        Text = $"{friend.FullName} ({friend.Email})",
-                        FontFamily = new FontFamily("Segoe UI"),
-                        FontSize = 14,
-                        Margin = new Thickness(5)
-                    };
-                    UsersContent.Children.Add(textBlock);
-                }
-            }
-            else
-            {
-                var friends = FriendDAO.Instance.GetFriendsWithStatus(email);
-                var filteredFriends = friends.Where(f =>
-                    f.FullName.ToLower().Contains(searchText.ToLower()) ||
-                    f.Email.ToLower().Contains(searchText.ToLower()));
-
-                if (filteredFriends.Any())
-                {
-                    foreach (var friend in filteredFriends)
-                    {
-                        TextBlock textBlock = new TextBlock
-                        {
-                            Text = $"{friend.FullName} ({friend.Email})",
-                            FontFamily = new FontFamily("Segoe UI"),
-                            FontSize = 14,
-                            Margin = new Thickness(5)
-                        };
-                        UsersContent.Children.Add(textBlock);
-                    }
-                }
-                else
-                {
-                    TextBlock noResult = new TextBlock
-                    {
-                        Text = "Không tìm thấy kết quả.",
-                        FontFamily = new FontFamily("Segoe UI"),
-                        FontSize = 14,
-                        Margin = new Thickness(5),
-                        Foreground = System.Windows.Media.Brushes.Red
-                    };
-                    UsersContent.Children.Add(noResult);
-                }
-            }
-        }
-
-        private async void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
-        {
-            _userService.SetOfflineStatusInDB(email);
-            if (_statusHub != null)
-            {
-                await _statusHub.SetOffline(email);
-                await _statusHub.DisconnectAsync();
-            }
-            _notificationService.Dispose();
         }
 
         private void UpdateFriendStatus(string email, string newStatus)
@@ -384,34 +576,6 @@ namespace ChatApp.Client.Views
             else
             {
                 Dispatcher.Invoke(() => UpdateFriendStatus(email, newStatus));
-            }
-        }
-
-        private async void Window_Loaded(object sender, RoutedEventArgs e)
-        {
-            _notificationService = new NotificationService(email);
-            await _notificationService.ConnectNotificationHub();
-
-            await _statusHub.SetOnline(email);
-            _userService.SetOnlineStatusInDB(email);
-
-            await _statusHub.ConnectAsync((friendEmail, status) =>
-            {
-                Dispatcher.Invoke(() => UpdateFriendStatus(friendEmail, status));
-            });
-
-            try
-            {
-                BitmapImage bitmap = new BitmapImage();
-                bitmap.BeginInit();
-                bitmap.UriSource = new Uri(defaultAvatarUrl, UriKind.RelativeOrAbsolute);
-                bitmap.EndInit();
-                ThumbImageBrush.ImageSource = bitmap;
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error loading default avatar for {email}: {ex.Message}");
-                ThumbImageBrush.ImageSource = null;
             }
         }
 
@@ -464,7 +628,13 @@ namespace ChatApp.Client.Views
 
         private async void CreateGroupButton_Click(object sender, RoutedEventArgs e)
         {
-            // logic
+            CreateGroup createGroup = new CreateGroup(email);
+            bool? result = createGroup.ShowDialog();
+
+            if (result == true)
+            {
+                ListGroups();
+            }
         }
     }
 }

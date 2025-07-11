@@ -3,8 +3,6 @@ using ChatApp.Server.Hubs;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddEndpointsApiExplorer();
-
 builder.Services.AddSignalR(options =>
 {
     options.MaximumReceiveMessageSize = 20 * 1024 * 1024;
@@ -24,6 +22,7 @@ app.MapHub<StatusAccountHub>("/socket/status");
 app.MapHub<ChatOneOnOneHub>("/socket/chat-single");
 app.MapHub<NotificationHub>("/socket/notification");
 app.MapHub<VoiceCallHub>("/socket/voice-call");
-app.MapHub<VideoCallHub>("socket/video-call");
+app.MapHub<VideoCallHub>("/socket/video-call");
+app.MapHub<ChatGroupHub>("/socket/chat-group");
 
 app.Run();

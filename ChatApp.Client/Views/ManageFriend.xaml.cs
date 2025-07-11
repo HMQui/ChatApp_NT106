@@ -410,6 +410,16 @@ namespace ChatApp.Client.Views
 
             FriendDAO.Instance.AcceptFriendRequest(_fromEmail, friendEmail);
 
+            var notice = new NoticeDTO
+            {
+                Email = friend.Email,
+                Title = "Thông báo",
+                Message = $"{_fromEmail} đã chấp nhận lời mời kết bạn.",
+                IsSeen = false,
+                IsDeleted = false,
+                CreatedAt = DateTime.Now
+            };
+            NoticeDAO.Instance.AddNotice(notice);
             _notificationHub.SendNotification(_fromEmail, [friendEmail], friendEmail, "accept_friend_request");
         }
 
@@ -509,6 +519,16 @@ namespace ChatApp.Client.Views
                 InitializeListFriend();
                 InitializeFriendRequest();
             });
+            var notice = new NoticeDTO
+            {
+                Email = friendEmail,
+                Title = "Thông báo",
+                Message = $"{_fromEmail} đã gửi lời mời kết bạn.",
+                IsSeen = false,
+                IsDeleted = false,
+                CreatedAt = DateTime.Now
+            };
+            NoticeDAO.Instance.AddNotice(notice);
 
             _notificationHub.SendNotification(_fromEmail, [friendEmail], friendEmail, "friend_request");
         }

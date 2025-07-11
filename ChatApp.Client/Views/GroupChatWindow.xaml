@@ -1,0 +1,96 @@
+﻿<Window x:Class="ChatApp.Client.Views.GroupChatWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Group Chat" Height="500" Width="900" MinWidth="900"
+        Background="#F0F4F8" WindowStartupLocation="CenterScreen"
+        Loaded="form_loading"
+        Closing="form_closing">
+    <Grid>
+        <!-- Header -->
+        <DockPanel Background="#daedfe" Height="70" VerticalAlignment="Top" Margin="0,0,0,5" LastChildFill="True">
+
+            <!-- Back button -->
+            <Button Width="40" Height="40" Margin="10,10,0,10" 
+                    VerticalAlignment="Center" Background="Transparent" BorderThickness="0" 
+                    Click="BackButton_Click" Cursor="Hand">
+                <Image Source="/Assets/Images/arrow.png" Width="24" Height="24" RenderTransformOrigin="-10.151,7.974"/>
+            </Button>
+
+            <!-- Group avatar + name -->
+            <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="15,0,10,0">
+                <Ellipse Width="50" Height="50" Margin="0,0,10,0">
+                    <Ellipse.Fill>
+                        <ImageBrush ImageSource="https://static.thenounproject.com/png/2309777-200.png" Stretch="UniformToFill" x:Name="GroupAvatar"/>
+                    </Ellipse.Fill>
+                </Ellipse>
+                <TextBlock Text="Tên nhóm" FontWeight="Bold" FontSize="22" Foreground="Black" Name="GroupName"/>
+            </StackPanel>
+
+            <!-- Group Management Button -->
+            <Button Width="50" Height="40" Margin="0,0,15,0" HorizontalAlignment="Right" VerticalAlignment="Center"
+                    Background="White" Foreground="#3B82F6" BorderThickness="0" Cursor="Hand" Click="ManageGroupButton_Click">
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+                    <Image Source="/Assets/Images/menu.png" Width="20" Height="20" Margin="0,0,5,0"/>
+                </StackPanel>
+            </Button>
+        </DockPanel>
+
+        <!-- Chat Area -->
+        <ScrollViewer Margin="0,80,0,70" VerticalScrollBarVisibility="Auto" Background="#f3f3f3" x:Name="ChatBox">
+            <StackPanel x:Name="ChatMessages" Margin="15"/>
+        </ScrollViewer>
+
+        <!-- Message Input Area -->
+        <Grid Height="65" VerticalAlignment="Bottom" Background="#FFFFFF" Margin="0,5,0,0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+
+            <StackPanel Orientation="Horizontal" Grid.Column="0" Margin="10,10,5,10">
+                <Button Width="40" Height="40" Margin="0,0,5,0" Name="SendImg" Click="SendImg_Click" BorderThickness="0" Cursor="Hand" Background="Transparent">
+                    <Image Source="/Assets/Images/image.png" Width="24" Height="24"/>
+                </Button>
+                <Button Width="40" Height="40" Margin="5,0,5,0" Name="SendFile" Click="SendFile_Click" BorderThickness="0" Cursor="Hand" Background="Transparent">
+                    <Image Source="/Assets/Images/attach-file.png" Width="24" Height="24"/>
+                </Button>
+            </StackPanel>
+
+            <RichTextBox Grid.Column="1" FontSize="16" Margin="5,0,5,0" Background="#F1F5F9" BorderBrush="#CBD5E1" BorderThickness="1" Name="TextMess" VerticalAlignment="Center" Height="44"/>
+
+            <StackPanel Orientation="Horizontal" Grid.Column="2" Margin="5,10,10,10" VerticalAlignment="Center">
+                <Button Width="40" Height="40" Click="EmojiButton_Click" BorderThickness="0" Background="Transparent" Cursor="Hand">
+                    <Image Source="/Assets/Images/laugh.png" Width="24" Height="24"/>
+                </Button>
+                <Button Width="100" Height="44" Margin="5,0,0,0" VerticalAlignment="Center"
+                        Background="	#daedfe" Foreground="White" BorderThickness="0" Name="SendTextMess" Click="SendTextMess_Click" Cursor="Hand"
+                        FontSize="16" FontWeight="SemiBold">
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+                        <Image Source="/Assets/Images/send-8-64.png" Width="24" Height="24"/>
+                    </StackPanel>
+                </Button>
+            </StackPanel>
+        </Grid>
+
+        <!-- Emoji Popup -->
+        <Popup Name="EmojiPopup" Placement="Top" StaysOpen="False">
+            <Border Background="#FFFFFF" BorderBrush="#E2E8F0" BorderThickness="1" Padding="10" CornerRadius="8" Width="350" Height="250">
+                <StackPanel>
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                        <Button Content="✖" Width="24" Height="24" Click="CloseEmojiPopup_Click" Background="Transparent" BorderThickness="0" Cursor="Hand"/>
+                    </StackPanel>
+                    <ScrollViewer VerticalScrollBarVisibility="Auto" Height="180">
+                        <WrapPanel x:Name="EmojiPanel" Width="320"/>
+                    </ScrollViewer>
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,10,0,0">
+                        <Button Content="←" Width="30" Height="30" Margin="5" Click="PreviousEmojiPage_Click" Background="#E0E0E0" BorderThickness="0" Cursor="Hand"/>
+                        <TextBlock x:Name="EmojiPageText" Text="Page 1" VerticalAlignment="Center" Margin="10,0" FontSize="12" Foreground="#2D3748"/>
+                        <Button Content="→" Width="30" Height="30" Margin="5" Click="NextEmojiPage_Click" Background="#E0E0E0" BorderThickness="0" Cursor="Hand"/>
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+        </Popup>
+
+    </Grid>
+</Window>

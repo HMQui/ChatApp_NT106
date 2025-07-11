@@ -214,6 +214,7 @@
                     <!-- Thêm hàng cho nút ManageFriend -->
                     <RowDefinition Height="*"/>
                     <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
                     <!-- Hàng cho LogoutButton -->
                 </Grid.RowDefinitions>
                 <Viewbox Grid.Row="0" Width="68" Height="68" Margin="0,36,0,0">
@@ -227,6 +228,32 @@
                     Click="ManageFriendButton_Click" Cursor="Hand" Style="{StaticResource DefaultButton}">
                     <Image Source="/Assets/Images/user-group-solid.png" Width="24" Height="24" RenderOptions.BitmapScalingMode="HighQuality"/>
                 </Button>
+                <!-- Nút chuông thông báo -->
+                <Button x:Name="NotificationButton"
+                Grid.Row="2"
+                Width="40"
+                Height="40"
+                Margin="10,10,10,10"
+                Click="NotificationButton_Click"
+                Cursor="Hand"
+                Style="{StaticResource RoundedButton}"> 
+                    <Grid>
+                        <!-- Icon (tạm dùng icon thêm bạn bè) -->
+                        <Image Source="/Assets/Images/bell-solid.png"
+                               Width="24" Height="24"
+                               RenderOptions.BitmapScalingMode="HighQuality"/>  
+
+                        <!-- Badge đỏ -->
+                        <Ellipse x:Name="NotificationBadge"
+                                 Width="20" Height="200"
+                                 Fill="Red"
+                                 HorizontalAlignment="Right"
+                                 VerticalAlignment="Top"
+                                 Margin="0,-2,-2,0"
+                                 Visibility="Collapsed"/>
+                    </Grid>
+                </Button>
+
                 <Button x:Name="LogoutButton" Grid.Row="3" Content="Đăng xuất" Style="{StaticResource LogoutButton}"
                 VerticalAlignment="Bottom" Click="LogoutButton_Click" Cursor="Hand"/>
             </Grid>
@@ -277,5 +304,24 @@
                 </Border>
             </Grid>
         </Grid>
+        <Popup x:Name="NotificationPopup"
+           PlacementTarget="{Binding ElementName=NotificationButton}"
+           Placement="Right"
+           StaysOpen="False"
+           AllowsTransparency="True"
+           PopupAnimation="Fade">
+            <Border Background="White" 
+            BorderBrush="#E0E0E0" 
+            BorderThickness="1"
+            CornerRadius="5"
+            Width="300"
+            MaxHeight="400">
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <StackPanel x:Name="NotificationListPanel" Margin="10"/>
+                </ScrollViewer>
+            </Border>
+        </Popup>
+
     </Grid>
+    
 </Window>

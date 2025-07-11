@@ -17,6 +17,7 @@
     <None Remove="Assets\Images\arrow.png" />
     <None Remove="Assets\Images\attach-file.png" />
     <None Remove="Assets\Images\back-22-64.png" />
+    <None Remove="Assets\Images\bell-solid.png" />
     <None Remove="Assets\Images\call-5-64.png" />
     <None Remove="Assets\Images\emoji-31-64.png" />
     <None Remove="Assets\Images\file-67-64.png" />
@@ -25,6 +26,7 @@
     <None Remove="Assets\Images\laugh.png" />
     <None Remove="Assets\Images\Logo.png" />
     <None Remove="Assets\Images\mail.png" />
+    <None Remove="Assets\Images\menu.png" />
     <None Remove="Assets\Images\NoAvatar.png" />
     <None Remove="Assets\Images\password.png" />
     <None Remove="Assets\Images\send-8-64.png" />
@@ -59,6 +61,7 @@
     <Resource Include="Assets\Images\arrow.png" />
     <Resource Include="Assets\Images\attach-file.png" />
     <Resource Include="Assets\Images\back-22-64.png" />
+    <Resource Include="Assets\Images\bell-solid.png" />
     <Resource Include="Assets\Images\call-5-64.png" />
     <Resource Include="Assets\Images\emoji-31-64.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
@@ -69,6 +72,7 @@
     <Resource Include="Assets\Images\laugh.png" />
     <Resource Include="Assets\Images\Logo.png" />
     <Resource Include="Assets\Images\mail.png" />
+    <Resource Include="Assets\Images\menu.png" />
     <Resource Include="Assets\Images\NoAvatar.png" />
     <Resource Include="Assets\Images\password.png" />
     <Resource Include="Assets\Images\send-8-64.png">

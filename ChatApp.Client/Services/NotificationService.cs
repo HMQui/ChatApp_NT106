@@ -85,14 +85,47 @@ namespace ChatApp.Client.Services
                                 incomingVideoCallDialog.ShowDialog();
                             });
                         }
-                        else if (messageType == "unblock")
+                        /*else if (messageType == "group_notification")
                         {
-                            // Chỉ hiển thị toast
+                            string groupName = "";
+                            string mess = "";
+
+                            var parts = message.Split(new[] { "||" }, StringSplitOptions.None);
+                            if (parts.Length == 2)
+                            {
+                                groupName = parts[0].Trim();
+                                mess = parts[1].Trim();
+                            }
+                            else
+                            {
+                                groupName = "Thông báo";
+                                mess = message;
+                            }
+
+                            var toast = new ToastMess(groupName, mess);
+                            toast.Show();
                         }
-                        else
+                        else if (messageType == "group_message")
                         {
-                            // Tin nhắn thông thường
-                        }
+                            string groupName = "";
+                            string userName = "";
+                            string mess = "";
+
+                            var parts = message.Split(new[] { "||" }, StringSplitOptions.None);
+                            if (parts.Length == 3)
+                            {
+                                groupName = parts[0].Trim();
+                                userName = parts[1].Trim();
+                                mess = parts[2].Trim();
+                            }
+                            else
+                            {
+                                return;
+                            }
+
+                            var toast = new ToastMess(groupName, $"{userName}: {mess}");
+                            toast.Show();
+                        }*/
                     });
                 });
 
