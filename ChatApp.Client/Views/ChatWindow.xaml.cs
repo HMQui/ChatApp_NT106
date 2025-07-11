@@ -5,34 +5,21 @@ using ChatApp.Client.Hub;
 using ChatApp.Common.DAO;
 using SWM = System.Windows.Media;
 using SWC = System.Windows.Controls;
+using HA = System.Windows.HorizontalAlignment;
 using System.ComponentModel;
 using System.IO;
 using System.Windows.Controls;
 using System.Windows.Media.Imaging;
 using System.Windows.Media;
-using HA = System.Windows.HorizontalAlignment;
 using OpenFileDialog = Microsoft.Win32.OpenFileDialog;
 using MessageBox = System.Windows.Forms.MessageBox;
 using System.Windows.Documents;
-using System.Windows.Forms;
 
 namespace ChatApp.Client.Views
 {
     /// <summary>
     /// Interaction logic for ChatWindow.xaml
     /// </summary>
-    public class EmojiItem
-    {
-        public string Emoji { get; set; }
-        public string Color { get; set; }
-
-        public EmojiItem(string emoji, string color)
-        {
-            Emoji = emoji;
-            Color = color;
-        }
-    }
-
 
     public partial class ChatWindow : Window
     {
@@ -56,6 +43,17 @@ namespace ChatApp.Client.Views
         private int _currentEmojiPage = 1;
         private const int EmojisPerPage = 40;
         private bool _isNotificationHubConnected = false;
+        public class EmojiItem
+        {
+            public string Emoji { get; set; }
+            public string Color { get; set; }
+
+            public EmojiItem(string emoji, string color)
+            {
+                Emoji = emoji;
+                Color = color;
+            }
+        }
         private readonly List<EmojiItem> _emojiList = new List<EmojiItem>
         {
             new EmojiItem("😀", "#FFEB3B"),     // vàng tươi
@@ -143,7 +141,6 @@ namespace ChatApp.Client.Views
                 {
                     RenderNewMessage(newMsg, _fromEmail);
                 });
-                
             });
 
             // đợi phản hồi từ server nếu có thông báo mới
@@ -207,6 +204,11 @@ namespace ChatApp.Client.Views
             {
                 await _notificationHub.DisconnectAsync();
                 _isNotificationHubConnected = false;
+            }
+
+            if (_chatOneOnOneHub != null)
+            {
+                await _chatOneOnOneHub.DisposeAsync();
             }
 
             AppContext.CurrentChatEmail = null;

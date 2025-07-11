@@ -1,0 +1,58 @@
+﻿<Window x:Class="ChatApp.Client.Views.CreateGroup"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:ChatApp.Client.Views"
+        mc:Ignorable="d"
+        Title="CreateGroup" Height="450" Width="601"
+        >
+    <Grid Margin="20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- Tiêu đề -->
+        <TextBlock Grid.Row="0" Text="Tạo nhóm mới" 
+                   FontSize="24" FontWeight="SemiBold"
+                   HorizontalAlignment="Center" Margin="0,0,0,20"/>
+
+        <!-- Ô nhập tên nhóm -->
+        <StackPanel Grid.Row="1" Margin="0,0,0,15">
+            <TextBlock Text="Tên nhóm" Margin="0,0,0,5"
+                       Foreground="#555555" FontSize="14"/>
+            <TextBox x:Name="GroupNameTextBox" Height="40" 
+                     Padding="10" FontSize="16"
+                     BorderBrush="#CCCCCC" BorderThickness="1"
+                     Background="#FAFAFA"/>
+        </StackPanel>
+
+        <!-- Chọn ảnh avatar -->
+        <StackPanel Grid.Row="2" Margin="0,0,0,20">
+            <TextBlock Text="Ảnh đại diện (Bặt buộc)" 
+                       Margin="0,0,0,5"
+                       Foreground="#555555" FontSize="14"/>
+            <Button x:Name="SelectImageButton" Height="100" Width="100"
+                    Background="#F0F0F0" BorderBrush="#CCCCCC" BorderThickness="1"
+                    HorizontalAlignment="Left" Cursor="Hand">
+                <StackPanel>
+                    <Image x:Name="GroupImagePreview" Height="60" 
+                           Stretch="Uniform" Margin="0,0,0,5"/>
+                    <TextBlock Text="Chọn ảnh" HorizontalAlignment="Center"
+                               Foreground="#666666"/>
+                </StackPanel>
+            </Button>
+        </StackPanel>
+
+        <!-- Nút xác nhận -->
+        <Button Grid.Row="4" Content="Tạo nhóm" 
+                Height="45" Background="#4CAF50" 
+                Foreground="White" FontSize="16" FontWeight="SemiBold"
+                BorderThickness="0" Cursor="Hand"
+                Click="CreateGroupButton_Click"/>
+    </Grid>
+</Window>
