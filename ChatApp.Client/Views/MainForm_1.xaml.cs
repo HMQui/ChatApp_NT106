@@ -12,6 +12,7 @@ using System.Windows.Media;
 using System.Windows.Media.Effects;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement.ListView;
 using Color = System.Windows.Media.Color;
 using Cursors = System.Windows.Input.Cursors;
 using FontFamily = System.Windows.Media.FontFamily;
@@ -26,6 +27,7 @@ namespace ChatApp.Client.Views
         private List<UserFriendDTO> friends;
         private StatusAccountHub _statusHub;
         private UserService _userService;
+        private UserDTO _userProfile;
         private CircularPictureBoxService _circularPictureBoxService;
         private readonly string defaultAvatarUrl = "https://miamistonesource.com/wp-content/uploads/2018/05/no-avatar-25359d55aa3c93ab3466622fd2ce712d1.jpg";
 
@@ -37,6 +39,7 @@ namespace ChatApp.Client.Views
             _statusHub = new StatusAccountHub();
             _userService = new UserService();
             _circularPictureBoxService = new CircularPictureBoxService();
+            _userProfile = AccountDAO.Instance.SearchUsersByEmail(email);
 
             ListFriend();
             ListGroups();
@@ -256,7 +259,6 @@ namespace ChatApp.Client.Views
             grid.Children.Add(stackPanel);
             grid.Children.Add(statusTextBlock);
 
-            // Thêm hiệu ứng hover
             border.MouseEnter += (s, e) =>
             {
                 border.Background = new SolidColorBrush(Color.FromArgb(229, 229, 229, 229)); 
@@ -343,16 +345,21 @@ namespace ChatApp.Client.Views
 
             try
             {
+                string avatarUrl = _userProfile?.AvatarUrl ?? defaultAvatarUrl; // Sử dụng AvatarUrl từ UserDTO nếu có  
                 BitmapImage bitmap = new BitmapImage();
                 bitmap.BeginInit();
-                bitmap.UriSource = new Uri(defaultAvatarUrl, UriKind.RelativeOrAbsolute);
+                bitmap.UriSource = new Uri(avatarUrl, UriKind.RelativeOrAbsolute);
                 bitmap.EndInit();
                 ThumbImageBrush.ImageSource = bitmap;
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error loading default avatar for {email}: {ex.Message}");
-                ThumbImageBrush.ImageSource = null;
+                Console.WriteLine($"Error loading avatar for {email}: {ex.Message}");
+                BitmapImage bitmap = new BitmapImage();
+                bitmap.BeginInit();
+                bitmap.UriSource = new Uri(defaultAvatarUrl, UriKind.RelativeOrAbsolute);
+                bitmap.EndInit();
+                ThumbImageBrush.ImageSource = bitmap;
             }
         }
 
@@ -406,6 +413,11 @@ namespace ChatApp.Client.Views
         private async void CreateGroupButton_Click(object sender, RoutedEventArgs e)
         {
             // logic
+        }
+
+        private void NotificationButton_Click(object sender, RoutedEventArgs e)
+        {
+
         }
     }
 }

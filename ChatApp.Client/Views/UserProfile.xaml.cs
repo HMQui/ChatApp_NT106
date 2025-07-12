@@ -34,15 +34,15 @@ namespace ChatApp.Client.Views
 
         public void InitUI()
         {
-            /*if (_userProfile != null)
+            if (_userProfile != null)
             {
-                // Tên và email
-                FullNameTextBlock.Text = _userProfile.FullName;
-                EmailTextBlock.Text = _userProfile.Email;
+                FullNameTextBlock.Text = _userProfile.FullName ?? "Chưa có dữ liệu";
 
-                // Ngày tạo
-                CreatedAtTextBlock.Text = _userProfile.CreatedAt.ToString("dd MMMM, yyyy");
+                EmailTextBox.Text = _userProfile.Email ?? "Chưa có dữ liệu";
 
+                CreatedAtTextBlock.Text = _userProfile.CreatedAt != default ? _userProfile.CreatedAt.ToString("dd MMMM, yyyy") : "Chưa có dữ liệu";
+
+                PhoneTextBox.Text = _userProfile.Phone ?? "Chưa có dữ liệu";
                 // Avatar
                 try
                 {
@@ -52,22 +52,20 @@ namespace ChatApp.Client.Views
                     }
                     else
                     {
-                        // Đảm bảo đường dẫn chính xác
                         AvatarBrush.Source = new BitmapImage(new Uri("https://miamistonesource.com/wp-content/uploads/2018/05/no-avatar-25359d55aa3c93ab3466622fd2ce712d1.jpg"));
                     }
                 }
                 catch (Exception ex)
                 {
                     MessageBox.Show($"Lỗi khi tải hình ảnh avatar: {ex.Message}");
-                    // Có thể gán một hình ảnh thay thế hoặc để trống
                     AvatarBrush.Source = null;
                 }
             }
             else
             {
-                MessageBox.Show("Không tìm thấy người dùng.");
+                MessageBox.Show("Không tìm thấy người dùng hoặc dữ liệu rỗng.");
                 Close();
-            }*/
+            }
         }
 
         private async void BackButton_Click(object sender, RoutedEventArgs e)
@@ -88,14 +86,19 @@ namespace ChatApp.Client.Views
             }
         }
 
-        private void Button_Click_1(object sender, RoutedEventArgs e)
+        private void ChangePassword_Click(object sender, RoutedEventArgs e)
         {
 
         }
 
-        private void Button_Click(object sender, RoutedEventArgs e)
+        private void UpdateButton_Click(object sender, RoutedEventArgs e)
         {
+            ChangeProfile cp = new ChangeProfile(_email);
+            this.Hide();
 
+            cp.ShowDialog();
+
+            this.Close();
         }
     }
 }

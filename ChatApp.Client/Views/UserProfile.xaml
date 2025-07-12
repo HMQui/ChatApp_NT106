@@ -5,77 +5,220 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:ChatApp.Client.Views"
         mc:Ignorable="d"
-        Title="UserProfile" Height="450" Width="490">
-    <Grid Margin="20">
-        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
-            <DockPanel Background="#FFFFFF" Height="60" LastChildFill="True" Width="432">
-                <!-- Nút back -->
-                <Button Width="40" Height="40" Margin="10,0,0,0"
-            VerticalAlignment="Center" HorizontalAlignment="Left"
-            Background="#E0E0E0" BorderThickness="0" Click="BackButton_Click" Cursor="Hand">
+        Title="" 
+        Height="550" 
+        Width="400"
+        WindowStyle="None"
+        AllowsTransparency="True"
+        Background="Transparent"
+        WindowStartupLocation="CenterScreen">
+    <Border CornerRadius="20" Background="White" Margin="0">
+        <Grid Margin="10">
+            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                <!-- Khung chứa thông tin -->
+                <Border Background="White" CornerRadius="16" Padding="20" Width="300" Height="470">
+                    <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Height="470">
+                        <!-- Avatar bo tròn -->
+                        <Grid Width="100" Height="100" Margin="17,18,17,18">
+                            <Image Source="/Assets/Images/NoAvatar.png" Stretch="UniformToFill"
+                                   RenderOptions.BitmapScalingMode="HighQuality" x:Name="AvatarBrush">
+                                <Image.Clip>
+                                    <EllipseGeometry RadiusX="50" RadiusY="50" Center="50,50"/>
+                                </Image.Clip>
+                            </Image>
+                        </Grid>
+
+                        <TextBlock x:Name="FullNameTextBlock"
+                                   Foreground="#111827" FontSize="15" TextAlignment="Center" FontWeight="Medium"/>
+                        <TextBlock Text="Ngày tham gia:"
+                        Foreground="#6B7280" FontSize="13" TextAlignment="Center" />
+                        <TextBlock x:Name="CreatedAtTextBlock"
+                        Foreground="#374151" FontSize="13" TextAlignment="Center" />
+
+                        <StackPanel>
+                            <!-- Chú thích và TextBox cho Số điện thoại -->
+                            <TextBlock Text="Số điện thoại" 
+                                       FontSize="12" 
+                                       Foreground="#6B7280" 
+                                       Margin="0,0,0,5"/>
+                            <TextBox x:Name="PhoneTextBox"
+                                     FontSize="15" 
+                                     FontWeight="Normal" 
+                                     Foreground="#111827" 
+                                     TextAlignment="Left" 
+                                     VerticalContentAlignment="Center" 
+                                     Width="250" 
+                                     Height="30" 
+                                     BorderBrush="#6B7280" 
+                                     BorderThickness="1" 
+                                     IsReadOnly="True" 
+                                     VerticalAlignment="Center">
+                                <TextBox.Style>
+                                    <Style TargetType="TextBox">
+                                        <Setter Property="Template">
+                                            <Setter.Value>
+                                                <ControlTemplate TargetType="TextBox">
+                                                    <Border x:Name="border" 
+                                                            Background="{TemplateBinding Background}" 
+                                                            BorderBrush="{TemplateBinding BorderBrush}" 
+                                                            BorderThickness="{TemplateBinding BorderThickness}" 
+                                                            CornerRadius="5">
+                                                        <ScrollViewer x:Name="PART_ContentHost" VerticalAlignment="Center"/>
+                                                    </Border>
+                                                </ControlTemplate>
+                                            </Setter.Value>
+                                        </Setter>
+                                    </Style>
+                                </TextBox.Style>
+                            </TextBox>
+
+                            <!-- Chú thích và TextBox cho Gmail -->
+                            <TextBlock Text="Gmail" 
+                                       FontSize="12" 
+                                       Foreground="#6B7280" 
+                                       Margin="0,10,0,5"/>
+                            <TextBox x:Name="EmailTextBox" 
+                                     FontSize="15" FontWeight="Normal" 
+                                     Foreground="#111827" 
+                                     TextAlignment="Left" Width="250" Height="30"
+                                     Margin="0,0,0,0" 
+                                     BorderBrush="#6B7280" BorderThickness="1" IsReadOnly="True" VerticalAlignment="Center">
+                                <TextBox.Style>
+                                    <Style TargetType="TextBox">
+                                        <Setter Property="Template">
+                                            <Setter.Value>
+                                                <ControlTemplate TargetType="TextBox">
+                                                    <Border x:Name="border" 
+                                    Background="{TemplateBinding Background}" 
+                                    BorderBrush="{TemplateBinding BorderBrush}" 
+                                    BorderThickness="{TemplateBinding BorderThickness}" 
+                                    CornerRadius="5">
+                                                        <ScrollViewer x:Name="PART_ContentHost" VerticalAlignment="Center"/>
+                                                    </Border>
+                                                </ControlTemplate>
+                                            </Setter.Value>
+                                        </Setter>
+                                    </Style>
+                                </TextBox.Style>
+                            </TextBox>
+                        </StackPanel>
+
+                        <!-- Nút Đổi Mật Khẩu -->
+                        <Button Content="Đổi Mật Khẩu" Width="200" Height="40"
+                                Margin="20,40,20,10" Cursor="Hand" Click="ChangePassword_Click">
+                            <Button.Style>
+                                <Style TargetType="Button">
+                                    <Setter Property="Background" Value="#FFFFFF"/>
+                                    <Setter Property="Foreground" Value="#1A3C34"/>
+                                    <Setter Property="FontWeight" Value="Bold"/>
+                                    <Setter Property="BorderBrush" Value="#1A3C34"/>
+                                    <Setter Property="BorderThickness" Value="1"/>
+                                    <Setter Property="Template">
+                                        <Setter.Value>
+                                            <ControlTemplate TargetType="Button">
+                                                <Border x:Name="border" 
+                                                        Background="{TemplateBinding Background}"
+                                                        BorderBrush="{TemplateBinding BorderBrush}"
+                                                        BorderThickness="{TemplateBinding BorderThickness}"
+                                                        CornerRadius="20"
+                                                        Padding="{TemplateBinding Padding}">
+                                                    <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                    <Border.Effect>
+                                                        <DropShadowEffect BlurRadius="5" Opacity="0.2" ShadowDepth="2" Color="#000000"/>
+                                                    </Border.Effect>
+                                                </Border>
+                                                <ControlTemplate.Triggers>
+                                                    <Trigger Property="IsMouseOver" Value="True">
+                                                        <Setter TargetName="border" Property="Background" Value="#F2F2F2"/>
+                                                        <Setter TargetName="border" Property="BorderBrush" Value="#245448"/>
+                                                        <Setter TargetName="border" Property="Effect">
+                                                            <Setter.Value>
+                                                                <DropShadowEffect BlurRadius="8" Opacity="0.3" ShadowDepth="3" Color="#000000"/>
+                                                            </Setter.Value>
+                                                        </Setter>
+                                                    </Trigger>
+                                                </ControlTemplate.Triggers>
+                                            </ControlTemplate>
+                                        </Setter.Value>
+                                    </Setter>
+                                </Style>
+                            </Button.Style>
+                        </Button>
+
+                        <!-- Nút Lưu -->
+                        <Button Content="Cập nhật thông tin" Width="200" Height="41"
+                                Cursor="Hand" Click="UpdateButton_Click">
+                            <Button.Style>
+                                <Style TargetType="Button">
+                                    <Setter Property="Background" Value="#1A3C34"/>
+                                    <Setter Property="Foreground" Value="White"/>
+                                    <Setter Property="FontWeight" Value="Bold"/>
+                                    <Setter Property="BorderThickness" Value="0"/>
+                                    <Setter Property="Template">
+                                        <Setter.Value>
+                                            <ControlTemplate TargetType="Button">
+                                                <Border x:Name="border" 
+                                                        Background="{TemplateBinding Background}"
+                                                        BorderBrush="{TemplateBinding BorderBrush}"
+                                                        BorderThickness="{TemplateBinding BorderThickness}"
+                                                        CornerRadius="20"
+                                                        Padding="{TemplateBinding Padding}">
+                                                    <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                    <Border.Effect>
+                                                        <DropShadowEffect BlurRadius="5" Opacity="0.2" ShadowDepth="2" Color="#000000"/>
+                                                    </Border.Effect>
+                                                </Border>
+                                                <ControlTemplate.Triggers>
+                                                    <Trigger Property="IsMouseOver" Value="True">
+                                                        <Setter TargetName="border" Property="Background" Value="#245448"/>
+                                                        <Setter TargetName="border" Property="Effect">
+                                                            <Setter.Value>
+                                                                <DropShadowEffect BlurRadius="8" Opacity="0.3" ShadowDepth="3" Color="#000000"/>
+                                                            </Setter.Value>
+                                                        </Setter>
+                                                    </Trigger>
+                                                </ControlTemplate.Triggers>
+                                            </ControlTemplate>
+                                        </Setter.Value>
+                                    </Setter>
+                                </Style>
+                            </Button.Style>
+                        </Button>
+                    </StackPanel>
+                </Border>
+
+                <!-- Nút back ở dưới cùng -->
+                <Button Width="40" Height="40" Margin="0,0,0,0"
+                        VerticalAlignment="Center" HorizontalAlignment="Left"
+                        Background="Transparent" BorderThickness="0" Click="BackButton_Click" Cursor="Hand">
                     <Button.Style>
                         <Style TargetType="Button">
                             <Setter Property="Template">
                                 <Setter.Value>
                                     <ControlTemplate TargetType="Button">
-                                        <Border x:Name="border" Background="#FFFFFF" CornerRadius="8">
-                                            <Image Source="/Assets/Images/arrow.png" Width="24" Height="24" Stretch="Uniform"/>
+                                        <Border x:Name="border" Background="#FFFFFF" CornerRadius="20">
+                                            <Image Source="/Assets/Images/back_1A3C34.png" Width="24" Height="24" Stretch="Uniform"/>
+                                            <Border.Effect>
+                                                <DropShadowEffect BlurRadius="5" Opacity="0.1" ShadowDepth="1" Color="#000000"/>
+                                            </Border.Effect>
                                         </Border>
                                         <ControlTemplate.Triggers>
                                             <Trigger Property="IsMouseOver" Value="True">
-                                                <Setter TargetName="border" Property="Background" Value="#EEEEEE"/>
+                                                <Setter TargetName="border" Property="Background" Value="#F3F4F6"/>
+                                                <Setter TargetName="border" Property="Effect">
+                                                    <Setter.Value>
+                                                        <DropShadowEffect BlurRadius="8" Opacity="0.2" ShadowDepth="2" Color="#000000"/>
+                                                    </Setter.Value>
+                                                </Setter>
                                             </Trigger>
-                                        </ControlTemplate.Triggers>
+                                        </ControlTemplate.Triggers> 
                                     </ControlTemplate>
                                 </Setter.Value>
                             </Setter>
                         </Style>
                     </Button.Style>
                 </Button>
-
-                <!-- Grid để căn giữa tiêu đề -->
-                <Grid>
-                    <TextBlock Text="Trang Quản Lý Profile"
-                   FontSize="22" FontWeight="Bold"
-                   Foreground="#1F2937"
-                   HorizontalAlignment="Left"
-                   VerticalAlignment="Center"
-                   TextAlignment="Center" Margin="61,0,0,0"/>
-                </Grid>
-            </DockPanel>
-
-            <!-- Khung chứa thông tin -->
-            <Border Background="White" CornerRadius="16" Padding="20" Width="300" Height="339" >
-                <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Height="291">
-                    <Grid Width="100" Height="100">
-                        <Image Source="/Assets/Images/NoAvatar.png" Stretch="Uniform" RenderOptions.BitmapScalingMode="HighQuality" x:Name="AvatarBrush" Margin="17,18,17,18"/>
-                    </Grid>
-
-                    <TextBlock x:Name="FullNameTextBlock"
-                        FontSize="18" FontWeight="Bold"
-                        Foreground="#111827" TextAlignment="Center" />
-
-                    <TextBlock x:Name="EmailTextBlock"
-                          FontSize="15" FontWeight="Bold"
-                          Foreground="#111827" TextAlignment="Center" />
-
-                    <TextBlock Text="Ngày tham gia:"
-                        Foreground="#6B7280" FontSize="13" TextAlignment="Center" />
-                    <TextBlock x:Name="CreatedAtTextBlock"
-                        Foreground="#374151" FontSize="13" TextAlignment="Center" />
-
-
-                    <!-- Nút Đổi Mật Khẩu -->
-                    <Button Content="Đổi Mật Khẩu" Width="200" Height="40"
-                            Background="#EEF2FF" Foreground="#3B82F6"
-                            FontWeight="Bold" BorderBrush="#3B82F6" BorderThickness="1"
-                            Margin="20 10"/>
-                    <Button Content="Đổi Thông Tin Cá Nhân" Width="200" Height="41"
-                            Background="#EEF2FF" Foreground="#3B82F6"
-                            FontWeight="Bold" BorderBrush="#3B82F6" BorderThickness="1" Click="Button_Click_1"
-                            />
-                </StackPanel>
-            </Border>
-        </StackPanel>
-    </Grid>
+            </StackPanel>
+        </Grid>
+    </Border>
 </Window>

@@ -211,7 +211,9 @@
                 <Grid.RowDefinitions>
                     <RowDefinition Height="120"/>
                     <RowDefinition Height="Auto"/>
-                    <!-- Thêm hàng cho nút ManageFriend -->
+                    <!-- Hàng cho nút ManageFriend -->
+                    <RowDefinition Height="Auto"/>
+                    <!-- Hàng cho nút Notification -->
                     <RowDefinition Height="*"/>
                     <RowDefinition Height="Auto"/>
                     <!-- Hàng cho LogoutButton -->
@@ -219,16 +221,20 @@
                 <Viewbox Grid.Row="0" Width="68" Height="68" Margin="0,36,0,0">
                     <Ellipse Width="68" Height="68" MouseLeftButtonUp="ThumbImage_MouseLeftButtonUp" Cursor="Hand">
                         <Ellipse.Fill>
-                            <ImageBrush x:Name="ThumbImageBrush" Stretch="Uniform"/>
+                            <ImageBrush x:Name="ThumbImageBrush" Stretch="UniformToFill"/>
                         </Ellipse.Fill>
                     </Ellipse>
                 </Viewbox>
                 <Button x:Name="ManageFriendButton" Grid.Row="1" Width="80" Height="30" Margin="10,10,10,0"
-                    Click="ManageFriendButton_Click" Cursor="Hand" Style="{StaticResource DefaultButton}">
+        Click="ManageFriendButton_Click" Cursor="Hand" Style="{StaticResource DefaultButton}">
                     <Image Source="/Assets/Images/user-group-solid.png" Width="24" Height="24" RenderOptions.BitmapScalingMode="HighQuality"/>
                 </Button>
-                <Button x:Name="LogoutButton" Grid.Row="3" Content="Đăng xuất" Style="{StaticResource LogoutButton}"
-                VerticalAlignment="Bottom" Click="LogoutButton_Click" Cursor="Hand"/>
+                <Button x:Name="NotificationButton" Grid.Row="2" Width="80" Height="30" Margin="10,10,10,0"
+        Click="NotificationButton_Click" Cursor="Hand" Style="{StaticResource DefaultButton}">
+                    <Image Source="/Assets/Images/bell.png" Width="24" Height="24" RenderOptions.BitmapScalingMode="HighQuality"/>
+                </Button>
+                <Button x:Name="LogoutButton" Grid.Row="4" Content="Đăng xuất" Style="{StaticResource LogoutButton}"
+    VerticalAlignment="Bottom" Click="LogoutButton_Click" Cursor="Hand"/>
             </Grid>
         </Border>
         <!-- Main Content -->
