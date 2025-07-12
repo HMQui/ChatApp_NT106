@@ -124,7 +124,6 @@ namespace ChatApp.Client.Views
 
             if (rowsAffected > 0)
             {
-                MessageBox.Show("Cập nhật thông tin thành công!");
                 _userProfile.FullName = newFullName;
                 _userProfile.Phone = newPhoneNumber;
                 InitUI();

@@ -31,7 +31,6 @@ namespace ChatApp.Server.Hubs
             string fileName = $"avatar_{Guid.NewGuid()}.jpg";
             string avatarUrl = await _s3Service.UploadImageAsync(imageData, fileName);
 
-            // Cập nhật avatar_url trong cơ sở dữ liệu
             var fieldsToUpdate = new Dictionary<string, object> { { "avatar_url", avatarUrl } };
             var conditions = new Dictionary<string, object> { { "email", email } };
             int rowsAffected = AccountDAO.Instance.UpdateFields(fieldsToUpdate, conditions);

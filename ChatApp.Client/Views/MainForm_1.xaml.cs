@@ -2,22 +2,21 @@
 using ChatApp.Client.Services;
 using ChatApp.Common.DAO;
 using ChatApp.Common.DTOs;
-using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
-using System.Windows.Media.Effects;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement.ListView;
+using MediaBrushes = System.Windows.Media.Brushes;
 using Color = System.Windows.Media.Color;
 using Cursors = System.Windows.Input.Cursors;
 using FontFamily = System.Windows.Media.FontFamily;
 using Path = System.IO.Path;
-using Point = System.Windows.Point;
+using MessageBox = System.Windows.Forms.MessageBox;
+using Microsoft.VisualBasic.ApplicationServices;
 
 namespace ChatApp.Client.Views
 {
@@ -30,6 +29,9 @@ namespace ChatApp.Client.Views
         private UserDTO _userProfile;
         private CircularPictureBoxService _circularPictureBoxService;
         private readonly string defaultAvatarUrl = "https://miamistonesource.com/wp-content/uploads/2018/05/no-avatar-25359d55aa3c93ab3466622fd2ce712d1.jpg";
+        private NotificationService _notificationService;
+        private NotificationHub _notificationHub;
+        private bool _isNotificationHubConnected = false;
 
         public MainForm_1(string email)
         {
@@ -43,6 +45,70 @@ namespace ChatApp.Client.Views
 
             ListFriend();
             ListGroups();
+        }
+
+        private async void Window_Loaded(object sender, RoutedEventArgs e)
+        {
+            _notificationService = new NotificationService(email);
+            await _notificationService.ConnectNotificationHub();
+
+            await _statusHub.SetOnline(email);
+            _userService.SetOnlineStatusInDB(email);
+
+            await _statusHub.ConnectAsync((friendEmail, status) =>
+            {
+                Dispatcher.Invoke(() => UpdateFriendStatus(friendEmail, status));
+            });
+
+            ConnectNotificationHub();
+
+            try
+            {
+                BitmapImage bitmap = new BitmapImage();
+                bitmap.BeginInit();
+                bitmap.UriSource = new Uri(defaultAvatarUrl, UriKind.RelativeOrAbsolute);
+                bitmap.EndInit();
+                ThumbImageBrush.ImageSource = bitmap;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error loading default avatar for {email}: {ex.Message}");
+                ThumbImageBrush.ImageSource = null;
+            }
+        }
+
+        private async void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
+        {
+            _userService.SetOfflineStatusInDB(email);
+            if (_statusHub != null)
+            {
+                await _statusHub.SetOffline(email);
+                await _statusHub.DisconnectAsync();
+            }
+            _notificationService.Dispose();
+
+            if (_notificationHub != null)
+            {
+                await _notificationHub.DisconnectAsync();
+                _isNotificationHubConnected = false;
+            }
+        }
+
+        private async Task ConnectNotificationHub()
+        {
+            if (_notificationHub == null)
+            {
+                _notificationHub = new NotificationHub(email);
+            }
+
+            if (!_isNotificationHubConnected)
+            {
+                await _notificationHub.ConnectAsync((id, senderEmail, message, messageType) =>
+                {
+
+                });
+                _isNotificationHubConnected = true;
+            }
         }
 
         private void ListFriend()
@@ -73,7 +139,8 @@ namespace ChatApp.Client.Views
         private void ListGroups()
         {
             GroupsContent.Children.Clear();
-            var groups = GroupDAO.Instance.GetGroups(email);
+
+            var groups = GroupDAO.Instance.GetGroupsByUserEmail(email);
             if (groups == null || groups.Count == 0)
             {
                 TextBlock textBlock = new TextBlock
@@ -97,7 +164,7 @@ namespace ChatApp.Client.Views
 
         private Border CreateGroupPanel(GroupDTO group)
         {
-            string avatarUrl = string.IsNullOrEmpty(group.AvatarUrl) ? defaultAvatarUrl : group.AvatarUrl;
+            string avatarUrl = string.IsNullOrEmpty(group.Avatar_URL) ? defaultAvatarUrl : group.Avatar_URL;
 
             var border = new Border
             {
@@ -110,12 +177,14 @@ namespace ChatApp.Client.Views
             grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
             grid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
 
+            // Avatar ellipse
             var ellipse = new Ellipse { Width = 40, Height = 40, Margin = new Thickness(5) };
             try
             {
                 BitmapImage bitmap = new BitmapImage();
                 bitmap.BeginInit();
                 bitmap.UriSource = new Uri(avatarUrl, UriKind.RelativeOrAbsolute);
+                bitmap.CacheOption = BitmapCacheOption.OnLoad;
                 bitmap.EndInit();
                 ellipse.Fill = new ImageBrush { ImageSource = bitmap };
             }
@@ -125,12 +194,18 @@ namespace ChatApp.Client.Views
                 BitmapImage bitmap = new BitmapImage();
                 bitmap.BeginInit();
                 bitmap.UriSource = new Uri(defaultAvatarUrl, UriKind.RelativeOrAbsolute);
+                bitmap.CacheOption = BitmapCacheOption.OnLoad;
                 bitmap.EndInit();
                 ellipse.Fill = new ImageBrush { ImageSource = bitmap };
             }
             Grid.SetColumn(ellipse, 0);
 
-            var stackPanel = new StackPanel { Margin = new Thickness(10, 0, 0, 0) };
+            // StackPanel với thông tin group
+            var stackPanel = new StackPanel
+            {
+                Margin = new Thickness(10, 0, 0, 0)
+            };
+
             var nameTextBlock = new TextBlock
             {
                 Text = group.GroupName,
@@ -139,16 +214,35 @@ namespace ChatApp.Client.Views
                 FontSize = 14
             };
             stackPanel.Children.Add(nameTextBlock);
+
+            var createdByTextBlock = new TextBlock
+            {
+                Text = $"Created by: {group.CreatedBy}",
+                FontFamily = new FontFamily("Segoe UI"),
+                FontSize = 12,
+                Foreground = MediaBrushes.Gray
+            };
+            stackPanel.Children.Add(createdByTextBlock);
+
+            var createdAtTextBlock = new TextBlock
+            {
+                Text = $"Created at: {group.CreatedAt:dd/MM/yyyy}",
+                FontFamily = new FontFamily("Segoe UI"),
+                FontSize = 12,
+                Foreground = MediaBrushes.Gray
+            };
+            stackPanel.Children.Add(createdAtTextBlock);
+
             Grid.SetColumn(stackPanel, 1);
 
+            // Status - giả sử nhóm nào cũng "Active"
             var statusTextBlock = new TextBlock
             {
-                Name = "StatusTextBlock",
-                Text = group.Status == "online" ? "🟢 Online" : "⚫ Offline",
+                Text = "🟢 Active",
                 FontFamily = new FontFamily("Segoe UI"),
                 FontStyle = FontStyles.Italic,
                 FontSize = 12,
-                Foreground = group.Status == "online" ? new SolidColorBrush(Colors.Green) : new SolidColorBrush(Colors.Gray),
+                Foreground = new SolidColorBrush(Colors.Green),
                 Margin = new Thickness(10, 0, 10, 0),
                 VerticalAlignment = VerticalAlignment.Center
             };
@@ -160,7 +254,7 @@ namespace ChatApp.Client.Views
 
             border.MouseEnter += (s, e) =>
             {
-                border.Background = new SolidColorBrush(Color.FromArgb(229, 229, 229, 229)); 
+                border.Background = new SolidColorBrush(Color.FromRgb(229, 229, 229));
             };
             border.MouseLeave += (s, e) =>
             {
@@ -169,22 +263,16 @@ namespace ChatApp.Client.Views
 
             border.Child = grid;
 
-            border.MouseDown += (s, e) => OpenGroupChat(group.GroupId);
+            border.MouseDown += async (s, e) =>
+            {
+                GroupChatWindow chatRoom = new GroupChatWindow(email, group.Id);
+                _notificationService.Dispose();
+                this.Hide();
+                chatRoom.ShowDialog();
+                this.Close();
+            };
 
             return border;
-        }
-
-        private void OpenGroupChat(string groupId)
-        {
-            _userService.SetOfflineStatusInDB(email);
-            if (_statusHub != null)
-            {
-                _statusHub.DisconnectAsync().Wait();
-            }
-            this.Hide();
-            ChatWindow chatRoom = new ChatWindow(email, groupId, "group");
-            chatRoom.ShowDialog();
-            this.Close();
         }
 
         private Border CreateFriendPanel(UserFriendDTO user)
@@ -273,26 +361,13 @@ namespace ChatApp.Client.Views
             border.MouseDown += async (s, e) =>
             {
                 ChatWindow chatRoom = new ChatWindow(email, user.Email, user.FriendStatus);
-                if (_statusHub != null)
-                {
-                    await _statusHub.DisconnectAsync();
-                }
+                _notificationService.Dispose();
                 this.Hide();
                 chatRoom.ShowDialog();
                 this.Close();
             };
 
             return border;
-        }
-
-        private async void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
-        {
-            _userService.SetOfflineStatusInDB(email);
-            if (_statusHub != null)
-            {
-                await _statusHub.SetOffline(email);
-                await _statusHub.DisconnectAsync();
-            }
         }
 
         private void UpdateFriendStatus(string email, string newStatus)
@@ -330,36 +405,6 @@ namespace ChatApp.Client.Views
             else
             {
                 Dispatcher.Invoke(() => UpdateFriendStatus(email, newStatus));
-            }
-        }
-
-        private async void Window_Loaded(object sender, RoutedEventArgs e)
-        {
-            await _statusHub.SetOnline(email);
-            _userService.SetOnlineStatusInDB(email);
-
-            await _statusHub.ConnectAsync((friendEmail, status) =>
-            {
-                Dispatcher.Invoke(() => UpdateFriendStatus(friendEmail, status));
-            });
-
-            try
-            {
-                string avatarUrl = _userProfile?.AvatarUrl ?? defaultAvatarUrl; // Sử dụng AvatarUrl từ UserDTO nếu có  
-                BitmapImage bitmap = new BitmapImage();
-                bitmap.BeginInit();
-                bitmap.UriSource = new Uri(avatarUrl, UriKind.RelativeOrAbsolute);
-                bitmap.EndInit();
-                ThumbImageBrush.ImageSource = bitmap;
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error loading avatar for {email}: {ex.Message}");
-                BitmapImage bitmap = new BitmapImage();
-                bitmap.BeginInit();
-                bitmap.UriSource = new Uri(defaultAvatarUrl, UriKind.RelativeOrAbsolute);
-                bitmap.EndInit();
-                ThumbImageBrush.ImageSource = bitmap;
             }
         }
 
@@ -412,7 +457,13 @@ namespace ChatApp.Client.Views
 
         private async void CreateGroupButton_Click(object sender, RoutedEventArgs e)
         {
-            // logic
+            CreateGroup createGroup = new CreateGroup(email);
+            bool? result = createGroup.ShowDialog();
+
+            if (result == true)
+            {
+                ListGroups();
+            }
         }
 
         private void NotificationButton_Click(object sender, RoutedEventArgs e)

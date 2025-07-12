@@ -1,10 +1,5 @@
 ﻿using ChatApp.Common.DTOs;
-using System;
-using System.Collections.Generic;
-using System.Data;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace ChatApp.Common.DAO
 {
@@ -141,7 +136,6 @@ namespace ChatApp.Common.DAO
 
             return user;
         }
-
 
         public UserDTO GetUserInfoByEmail(string email)
         {
