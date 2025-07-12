@@ -439,6 +439,7 @@ namespace ChatApp.Client.Views
             {
                 foreach (var userEmail in _groupMemberEmails)
                 {
+                    if (userEmail == _email) continue;
                     var notice = new NoticeDTO
                     {
                         Email = userEmail,
@@ -477,6 +478,7 @@ namespace ChatApp.Client.Views
 
             foreach (var userEmail in _groupMemberEmails)
             {
+                if (userEmail == _email) continue;
                 var notice = new NoticeDTO
                 {
                     Email = userEmail,
@@ -510,6 +512,7 @@ namespace ChatApp.Client.Views
 
             foreach (var userEmail in _groupMemberEmails)
             {
+                if (userEmail == _email) continue;
                 var notice = new NoticeDTO
                 {
                     Email = userEmail,
@@ -656,6 +659,7 @@ namespace ChatApp.Client.Views
 
                 foreach (var userEmail in _groupMemberEmails)
                 {
+                    if (userEmail == _email) continue;
                     var notice = new NoticeDTO
                     {
                         Email = userEmail,
