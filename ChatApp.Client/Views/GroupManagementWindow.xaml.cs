@@ -43,7 +43,7 @@ namespace ChatApp.Client.Views
 
         private void form_closing(object sender, CancelEventArgs e)
         {
-            
+
         }
 
         private void InitUI()
@@ -160,7 +160,7 @@ namespace ChatApp.Client.Views
             {
                 MessageBox.Show("Thêm thành viên thất bại. Vui lòng thử lại.");
                 return;
-            } 
+            }
 
             // Cập nhật lại UI
             _groupMembers.Add(newMem);
@@ -180,7 +180,7 @@ namespace ChatApp.Client.Views
 
             // Thông báo thêm thành viên thành công
             await _notificationHub.SendNotification(_groupInfo.CreatedBy, [user.Email], $"{_groupInfo.GroupName}||Bạn đã được thêm vào nhóm!", "group_notification");
-           
+
             byte[] messageContent = System.Text.Encoding.UTF8.GetBytes($"{user.FullName} đã được thêm vào nhóm.");
             await _chatGroupHub.SendGroupMessageAsync(_groupInfo.Id, messageContent, user.FullName, "group_notification", DateTime.Now);
         }

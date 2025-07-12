@@ -519,7 +519,7 @@ namespace ChatApp.Client.Views
             // Thêm hiệu ứng hover
             border.MouseEnter += (s, e) =>
             {
-                border.Background = new SolidColorBrush(Color.FromArgb(229, 229, 229, 229)); 
+                border.Background = new SolidColorBrush(Color.FromArgb(229, 229, 229, 229));
             };
             border.MouseLeave += (s, e) =>
             {

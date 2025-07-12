@@ -22,7 +22,6 @@ app.MapHub<StatusAccountHub>("/socket/status");
 app.MapHub<ChatOneOnOneHub>("/socket/chat-single");
 app.MapHub<NotificationHub>("/socket/notification");
 app.MapHub<VoiceCallHub>("/socket/voice-call");
-app.MapHub<VideoCallHub>("/socket/video-call");
-app.MapHub<ChatGroupHub>("/socket/chat-group");
+app.MapHub<VideoCallHub>("socket/video-call");
 
 app.Run();

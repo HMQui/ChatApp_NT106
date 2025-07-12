@@ -32,6 +32,7 @@ namespace ChatApp.Server.Hubs
             DateTime sendAt,
             string originalFileName = "")
         {
+            Console.WriteLine($"Received message from {senderEmail} in group {groupId} at {sendAt}: {messageType}");
             string payload = string.Empty;
             if (messageType == "text" || messageType == "emoji" || messageType == "group_notification")
             {

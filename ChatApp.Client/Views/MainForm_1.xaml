@@ -236,12 +236,12 @@
                 Margin="10,10,10,10"
                 Click="NotificationButton_Click"
                 Cursor="Hand"
-                Style="{StaticResource RoundedButton}"> 
+                Style="{StaticResource RoundedButton}">
                     <Grid>
                         <!-- Icon (tạm dùng icon thêm bạn bè) -->
                         <Image Source="/Assets/Images/bell-solid.png"
                                Width="24" Height="24"
-                               RenderOptions.BitmapScalingMode="HighQuality"/>  
+                               RenderOptions.BitmapScalingMode="HighQuality"/>
 
                         <!-- Badge đỏ -->
                         <Ellipse x:Name="NotificationBadge"
@@ -323,5 +323,5 @@
         </Popup>
 
     </Grid>
-    
+
 </Window>

@@ -184,13 +184,13 @@ namespace ChatApp.Client.Views
                                 MessageBox.Show("Lỗi load avatar: " + ex.Message);
                             }
                         }
-                    });                    
+                    });
                 }
                 if (messageType == "group_notification" && senderNickname == _email && senderNickname != _groupInfo.CreatedBy)
                 {
                     MessageBox.Show("Bạn đã bị gỡ khỏi nhóm này.");
 
-                    
+
                     System.Windows.Application.Current.Dispatcher.Invoke(() =>
                     {
                         this.Hide();
@@ -233,7 +233,7 @@ namespace ChatApp.Client.Views
                 if (messageType == "group_notification" || messageType == "group_chat") return;
 
             });
-            
+
         }
 
         private async void form_closing(object sender, CancelEventArgs e)
