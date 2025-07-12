@@ -8,7 +8,64 @@
         Title="IncomingCallDialog" Height="450" Width="800"
         Loaded="form_loading"
         Closing="form_closing"
-        >
+        Background="#F5F7FA" ResizeMode="NoResize">
+
+    <Window.Resources>
+        <Style x:Key="GreenButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="#45a575"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Height" Value="40"/>
+            <Setter Property="Width" Value="120"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}" 
+                                CornerRadius="8" 
+                                Padding="10,0">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Background" Value="#38A169"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter Property="Background" Value="#2F855A"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="RedButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="#EF4444"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Height" Value="40"/>
+            <Setter Property="Width" Value="120"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}" 
+                                CornerRadius="8" 
+                                Padding="10,0">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Background" Value="#DC2626"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter Property="Background" Value="#B91C1C"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Window.Resources>
+
     <Grid>
         <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
             <TextBlock Text="Bạn có cuộc gọi đến từ:" FontSize="16" Margin="10" HorizontalAlignment="Center"/>
@@ -19,16 +76,15 @@
 
             <!-- Nút gọi đến -->
             <StackPanel x:Name="spCallRequest" Orientation="Horizontal" HorizontalAlignment="Center" Margin="10">
-                <Button Content="Chấp nhận" Width="100" Margin="5" Click="Accept_Click"/>
-                <Button Content="Từ chối" Width="100" Margin="5" Click="Decline_Click"/>
+                <Button Content="Chấp nhận" Margin="5" Style="{StaticResource GreenButtonStyle}" Click="Accept_Click"/>
+                <Button Content="Từ chối" Margin="5" Style="{StaticResource RedButtonStyle}" Click="Decline_Click"/>
             </StackPanel>
 
             <!-- Nút trong khi đang gọi -->
             <StackPanel x:Name="spCallInProgress" Orientation="Horizontal" HorizontalAlignment="Center" Margin="10" Visibility="Collapsed">
-                <Button x:Name="btnToggleMic" Content="Tắt mic" Width="100" Margin="5" Click="ToggleMic_Click"/>
-                <Button x:Name="btnEndCall" Content="Kết thúc" Width="100" Margin="5" Click="EndCall_Click"/>
+                <Button x:Name="btnToggleMic" Content="Tắt mic" Margin="5" Style="{StaticResource GreenButtonStyle}" Click="ToggleMic_Click"/>
+                <Button x:Name="btnEndCall" Content="Kết thúc" Margin="5" Style="{StaticResource RedButtonStyle}" Click="EndCall_Click"/>
             </StackPanel>
         </StackPanel>
-
     </Grid>
 </Window>

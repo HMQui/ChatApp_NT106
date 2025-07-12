@@ -39,6 +39,7 @@ namespace ChatApp.Client.Views
         private async void form_loading(object sender, EventArgs e)
         {
             txtReceiver.Text = _user; // You can map toEmail to a display name if needed
+            txtReceiver.Text = _user; // You can map toEmail to a display name if needed
             // đợi phản hồi từ server nếu có thông báo mới
             await _notificationHub.ConnectAsync((id, senderEmail, message, messageType) =>
             {
@@ -106,7 +107,14 @@ namespace ChatApp.Client.Views
                         _isInCall = true;
                     });
                 }
-                else if (messageType == "end_voice_call") this.Close();
+                else if (messageType == "end_voice_call") 
+                {
+                    System.Windows.Application.Current.Dispatcher.Invoke(() =>
+                    {
+                        this.Close();
+                    });
+                }
+                ;
             });
 
             // gửi thông báo gọi đến user
@@ -116,11 +124,9 @@ namespace ChatApp.Client.Views
         {
             _isMicOn = !_isMicOn;
             btnToggleMic.Content = _isMicOn ? "Tắt mic" : "Bật mic";
-            // TODO: gửi trạng thái mic hoặc xử lý ở client
         }
         private async void EndCall_Click(object sender, RoutedEventArgs e)
         {
-            await _notificationHub.SendNotification(_fromEmail, [_toEmail], "voice call", "end_voice_call");
             _waveIn?.StopRecording();
             _waveIn?.Dispose();
             _voiceHub?.DisposeAsync();
@@ -137,6 +143,7 @@ namespace ChatApp.Client.Views
 
         private async void form_closing(object sender, CancelEventArgs e)
         {
+            await _notificationHub.SendNotification(_fromEmail, [_toEmail], "voice call", "end_voice_call");
             _waveIn?.StopRecording();
             _waveIn?.Dispose();
             _voiceHub?.DisposeAsync();
@@ -145,13 +152,14 @@ namespace ChatApp.Client.Views
             {
                 await _notificationHub.DisconnectAsync();
             }
-            this.Close();
         }
 
         private async void Cancel_Click(object sender, RoutedEventArgs e)
         {
-            await _notificationHub.SendNotification(_fromEmail, [_toEmail], "voice call", "cancel_voice_call");
-            this.Close();
+            System.Windows.Application.Current.Dispatcher.Invoke(() =>
+            {
+                this.Close();
+            });
         }
     }
 }

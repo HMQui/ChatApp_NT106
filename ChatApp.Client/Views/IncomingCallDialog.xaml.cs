@@ -46,12 +46,19 @@ namespace ChatApp.Client.Views
                         this.Close();
                     });
                 }
-                else if (messageType == "end_voice_call") this.Close();
+                else if (messageType == "end_voice_call")
+                {
+                    System.Windows.Application.Current.Dispatcher.Invoke(() =>
+                    {
+                        this.Close();
+                    });
+                };
             });
         }
 
         private async void form_closing(object sender, CancelEventArgs e)
         {
+            await _notificationHub.SendNotification(_toEmail, [_fromEmail], "voice call", "end_voice_call");
             _waveIn?.StopRecording();
             _waveIn?.Dispose();
             _voiceHub?.DisposeAsync();
@@ -60,15 +67,11 @@ namespace ChatApp.Client.Views
             _bufferedWaveProvider = null;
             _isInCall = false;
             _callTimer?.Stop();
-            await _notificationHub.SendNotification(_fromEmail, [_toEmail], "voice call", "end_voice_call");
+            await _notificationHub.SendNotification(_toEmail, [_fromEmail], "voice call", "end_voice_call");
             if (_notificationHub != null)
             {
                 await _notificationHub.DisconnectAsync();
             }
-            System.Windows.Application.Current.Dispatcher.Invoke(() =>
-            {
-                this.Close();
-            });
         }
 
         private async void Accept_Click(object sender, RoutedEventArgs e)
@@ -141,7 +144,6 @@ namespace ChatApp.Client.Views
 
         private async void EndCall_Click(object sender, RoutedEventArgs e)
         {
-            await _notificationHub.SendNotification(_fromEmail, [_toEmail], "voice call", "end_voice_call");
             _waveIn?.StopRecording();
             _waveIn?.Dispose();
             _voiceHub?.DisposeAsync();
@@ -156,9 +158,12 @@ namespace ChatApp.Client.Views
             });
         }
 
-        private void Decline_Click(object sender, RoutedEventArgs e)
+        private async void Decline_Click(object sender, RoutedEventArgs e)
         {
-
+            System.Windows.Application.Current.Dispatcher.Invoke(() =>
+            {
+                this.Close();
+            });
         }
     }
 }
