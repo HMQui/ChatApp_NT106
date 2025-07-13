@@ -35,10 +35,43 @@ namespace ChatApp.Client.Views
 
         private async void form_loading(object sender, RoutedEventArgs e)
         {
+            await InitializeSignalR();
+
             _groupMembers = GroupMembersDAO.Instance.GetMembersByGroupId(_groupInfo.Id);
             _userNotInGroup = GroupMembersDAO.Instance.GetFriendsNotInGroup(_groupInfo.Id, _groupInfo.CreatedBy);
 
             InitUI();
+        }
+        private async Task InitializeSignalR()
+        {
+            await _chatGroupHub.ConnectAsync((groupId, senderEmail, senderNickname, message, messageType, sentAt) =>
+            {
+                if (messageType == "group_notification" && groupId == _groupInfo.Id && senderNickname == _groupInfo.CreatedBy)
+                {
+                    var filters = new Dictionary<string, object>
+                {
+                    { "id", _groupInfo.Id },
+                };
+                    List<GroupDTO> groups = GroupDAO.Instance.GetGroupsWithFilters(filters);
+                    if (groups == null || groups.Count == 0)
+                    {
+                        System.Windows.Application.Current.Dispatcher.Invoke(() =>
+                        {
+                            try
+                            {
+                                if (this.IsLoaded)
+                                {
+                                    this.Close(); // Tự động đóng khi nhóm bị giải tán
+                                }
+                            }
+                            catch (Exception ex)
+                            {
+                                Console.WriteLine($"Lỗi khi đóng GroupManagementWindow: {ex.Message}");
+                            }
+                        });
+                    }
+                }
+            });
         }
 
         private void form_closing(object sender, CancelEventArgs e)
@@ -296,7 +329,6 @@ namespace ChatApp.Client.Views
 
         private async void DisbandGroupButton_Click(object sender, RoutedEventArgs e)
         {
-            // Sử dụng MessageBox từ System.Windows (WPF)
             MessageBoxResult result = System.Windows.MessageBox.Show(
                 "Bạn có chắc chắn muốn giải tán nhóm này?",
                 "Xác nhận giải tán nhóm",
@@ -321,9 +353,22 @@ namespace ChatApp.Client.Views
                             "group_notification",
                             DateTime.Now);
 
-                        System.Windows.MessageBox.Show("Đã giải tán nhóm thành công!");
-                        this.DialogResult = true;
-                        this.Close();
+                        // Kiểm tra lại trạng thái nhóm trước khi đóng
+                        var filters = new Dictionary<string, object>
+                    {
+                        { "id", _groupInfo.Id },
+                    };
+                        List<GroupDTO> groups = GroupDAO.Instance.GetGroupsWithFilters(filters);
+                        if (groups == null || groups.Count == 0)
+                        {
+                            System.Windows.MessageBox.Show("Đã giải tán nhóm thành công!");
+                            this.DialogResult = true;
+                            this.Close();
+                        }
+                        else
+                        {
+                            System.Windows.MessageBox.Show("Giải tán nhóm thất bại hoặc trạng thái không cập nhật!");
+                        }
                     }
                     else
                     {

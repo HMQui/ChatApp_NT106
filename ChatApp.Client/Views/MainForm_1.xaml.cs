@@ -20,6 +20,7 @@ using HA = System.Windows.HorizontalAlignment;
 using MessageBox = System.Windows.Forms.MessageBox;
 using Microsoft.VisualBasic.ApplicationServices;
 using WpfOrientation = System.Windows.Controls.Orientation;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement.ListView;
 
 namespace ChatApp.Client.Views
 {
@@ -36,6 +37,7 @@ namespace ChatApp.Client.Views
         private bool _isNotificationHubConnected = false;
         private List<NoticeDTO> _notifications;
         private bool _hasUnreadNotifications = false;
+        private UserDTO _userProfile;
 
         public MainForm_1(string email)
         {
@@ -45,6 +47,7 @@ namespace ChatApp.Client.Views
             _statusHub = new StatusAccountHub();
             _userService = new UserService();
             _circularPictureBoxService = new CircularPictureBoxService();
+            _userProfile = AccountDAO.Instance.SearchUsersByEmail(email);
 
             ListFriend();
             ListGroups();
@@ -52,6 +55,32 @@ namespace ChatApp.Client.Views
 
         private async void Window_Loaded(object sender, RoutedEventArgs e)
         {
+            string avatarUrl = _userProfile?.AvatarUrl;
+
+            try
+            {
+                BitmapImage bitmap = new BitmapImage();
+                bitmap.BeginInit();
+                bitmap.UriSource = new Uri(string.IsNullOrEmpty(avatarUrl) ? defaultAvatarUrl : avatarUrl, UriKind.RelativeOrAbsolute);
+                bitmap.CacheOption = BitmapCacheOption.OnLoad;
+                bitmap.EndInit();
+                ThumbImageBrush.ImageSource = bitmap;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error loading avatar for {email}: {ex.Message}");
+
+                // fallback ảnh mặc định nếu URL có lỗi
+                BitmapImage fallback = new BitmapImage();
+                fallback.BeginInit();
+                fallback.UriSource = new Uri(defaultAvatarUrl, UriKind.RelativeOrAbsolute);
+                fallback.CacheOption = BitmapCacheOption.OnLoad;
+                fallback.EndInit();
+
+                ThumbImageBrush.ImageSource = fallback;
+            }
+
+            // Kết nối các service
             _notificationService = new NotificationService(email);
             await _notificationService.ConnectNotificationHub();
 
@@ -64,22 +93,9 @@ namespace ChatApp.Client.Views
             });
 
             ConnectNotificationHub();
-
-            try
-            {
-                BitmapImage bitmap = new BitmapImage();
-                bitmap.BeginInit();
-                bitmap.UriSource = new Uri(defaultAvatarUrl, UriKind.RelativeOrAbsolute);
-                bitmap.EndInit();
-                ThumbImageBrush.ImageSource = bitmap;
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error loading default avatar for {email}: {ex.Message}");
-                ThumbImageBrush.ImageSource = null;
-            }
             LoadNotifications();
         }
+
 
         private async void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {

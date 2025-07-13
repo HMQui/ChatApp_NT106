@@ -43,6 +43,8 @@ namespace ChatApp.Client.Views
         private int _currentEmojiPage = 1;
         private const int EmojisPerPage = 40;
         private bool _isNotificationHubConnected = false;
+        private readonly string defaultAvatarUrl = "https://miamistonesource.com/wp-content/uploads/2018/05/no-avatar-25359d55aa3c93ab3466622fd2ce712d1.jpg";
+
         public class EmojiItem
         {
             public string Emoji { get; set; }
@@ -116,6 +118,8 @@ namespace ChatApp.Client.Views
             _userInfo = AccountDAO.Instance.GetUserInfoByEmail(_fromEmail);
             _friendInfo = AccountDAO.Instance.GetUserInfoByEmail(_toEmail);
 
+            LoadAvatar(_friendInfo.AvatarUrl);
+
             await _statusHub.SetOnline(_fromEmail);
 
             _userService.SetOnlineStatusInDB(_fromEmail);
@@ -147,6 +151,27 @@ namespace ChatApp.Client.Views
             await ConnectNotificationHub();
 
             AppContext.CurrentChatEmail = _toEmail;
+        }
+
+        private void LoadAvatar(string avatarUrl)
+        {
+            try
+            {
+                string finalUrl = string.IsNullOrEmpty(avatarUrl) ? defaultAvatarUrl : avatarUrl;
+
+                BitmapImage bitmap = new BitmapImage();
+                bitmap.BeginInit();
+                bitmap.UriSource = new Uri(finalUrl, UriKind.RelativeOrAbsolute);
+                bitmap.CacheOption = BitmapCacheOption.OnLoad;
+                bitmap.EndInit();
+
+                AvatarBrush.ImageSource = bitmap;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Avatar load failed: " + ex.Message);
+                AvatarBrush.ImageSource = null;
+            }
         }
 
         private async Task ConnectNotificationHub()

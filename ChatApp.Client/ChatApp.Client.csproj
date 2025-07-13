@@ -17,6 +17,7 @@
     <None Remove="Assets\Images\arrow.png" />
     <None Remove="Assets\Images\attach-file.png" />
     <None Remove="Assets\Images\back-22-64.png" />
+    <None Remove="Assets\Images\back_1A3C34.png" />
     <None Remove="Assets\Images\bell-solid.png" />
     <None Remove="Assets\Images\call-5-64.png" />
     <None Remove="Assets\Images\camera.png" />
@@ -29,6 +30,7 @@
     <None Remove="Assets\Images\mail.png" />
     <None Remove="Assets\Images\menu.png" />
     <None Remove="Assets\Images\NoAvatar.png" />
+    <None Remove="Assets\Images\notification.png" />
     <None Remove="Assets\Images\password.png" />
     <None Remove="Assets\Images\send-8-64.png" />
     <None Remove="Assets\Images\telephone-call.png" />
@@ -62,6 +64,7 @@
     <Resource Include="Assets\Images\arrow.png" />
     <Resource Include="Assets\Images\attach-file.png" />
     <Resource Include="Assets\Images\back-22-64.png" />
+    <Resource Include="Assets\Images\back_1A3C34.png" />
     <Resource Include="Assets\Images\bell-solid.png" />
     <Resource Include="Assets\Images\call-5-64.png" />
     <Resource Include="Assets\Images\camera.png" />
@@ -76,6 +79,7 @@
     <Resource Include="Assets\Images\mail.png" />
     <Resource Include="Assets\Images\menu.png" />
     <Resource Include="Assets\Images\NoAvatar.png" />
+    <Resource Include="Assets\Images\notification.png" />
     <Resource Include="Assets\Images\password.png" />
     <Resource Include="Assets\Images\send-8-64.png">
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>

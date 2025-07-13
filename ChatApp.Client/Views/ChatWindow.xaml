@@ -36,11 +36,15 @@
             </Button>
             <!-- Avatar + Tên + Trạng thái -->
             <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="15,0,10,0">
-                <Ellipse Width="40" Height="40" Margin="0,0,10,0">
+                <Ellipse x:Name="AvatarEllipse"
+                         Width="40" Height="40" Margin="0,0,10,0">
                     <Ellipse.Fill>
-                        <ImageBrush ImageSource="https://static.thenounproject.com/png/2309777-200.png" Stretch="UniformToFill" RenderOptions.BitmapScalingMode="HighQuality"/>
+                        <ImageBrush x:Name="AvatarBrush"
+                                    Stretch="UniformToFill"
+                                    RenderOptions.BitmapScalingMode="HighQuality"/>
                     </Ellipse.Fill>
                 </Ellipse>
+
                 <StackPanel Orientation="Vertical" VerticalAlignment="Center">
                     <TextBlock Text="Nguyễn Văn A" FontWeight="SemiBold" FontSize="16" Name="UserName" Foreground="#2D3748"/>
                     <TextBlock Text="Online" FontSize="12" Foreground="#48BB78" Name="StatusOnOff"/>

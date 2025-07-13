@@ -37,6 +37,8 @@ namespace ChatApp.Client.Views
         private int _currentEmojiPage = 1;
         private const int EmojisPerPage = 40;
         private List<string> _emojiFiles;
+        private Window _currentManagementWindow; // Thêm biến toàn cục
+
         public class EmojiItem
         {
             public string Emoji { get; set; }
@@ -147,60 +149,70 @@ namespace ChatApp.Client.Views
             });
             await _statusHub.SetOnline(_email);
 
-            // Hiển thị tin nhắn
+            // Hiển thị tin nhắn
             RenderGroupMessages(_groupMessages);
 
-            // Xử lý tin nhắn mới
+            // Xử lý tin nhắn mới
             _chatGroupHub = new ChatGroupHub(_email);
             await _chatGroupHub.ConnectAsync((groupId, senderEmail, senderNickname, message, messageType, sentAt) =>
             {
                 if (messageType == "group_notification" && senderNickname == _groupInfo.CreatedBy)
                 {
                     var filters = new Dictionary<string, object>
-                    {
-                        { "id", _GroupId },
-                    };
+    {
+        { "id", _GroupId },
+    };
                     List<GroupDTO> groups = GroupDAO.Instance.GetGroupsWithFilters(filters);
                     if (groups == null || groups.Count == 0)
                     {
-                        this.Hide();
-                        MainForm_1 mainForm = new MainForm_1(_email);
-                        mainForm.ShowDialog();
-                        this.Close();
-                        return;
-                    }
-                    _groupInfo = groups[0];
-                    System.Windows.Application.Current.Dispatcher.Invoke(() =>
-                    {
-                        GroupName.Text = _groupInfo.GroupName;
-                        if (!string.IsNullOrEmpty(_groupInfo.Avatar_URL))
+                        System.Windows.Application.Current.Dispatcher.Invoke(() =>
                         {
                             try
                             {
-                                GroupAvatar.ImageSource = new BitmapImage(new Uri(_groupInfo.Avatar_URL, UriKind.RelativeOrAbsolute));
+                                if (this.IsLoaded)
+                                {
+                                    this.Hide();
+                                    if (_currentManagementWindow != null && _currentManagementWindow.IsLoaded)
+                                    {
+                                        _currentManagementWindow.Close(); // Đóng cửa sổ quản lý nhóm
+                                    }
+                                    MainForm_1 mainForm = new MainForm_1(_email);
+                                    mainForm.ShowDialog();
+                                    this.Close();
+                                }
                             }
                             catch (Exception ex)
                             {
-                                MessageBox.Show("Lỗi load avatar: " + ex.Message);
+                                Console.WriteLine($"Lỗi khi xử lý giải tán nhóm: {ex.Message}");
                             }
-                        }
-                    });
+                        });
+                        return;
+                    }
+                    // ...
                 }
                 if (messageType == "group_notification" && senderNickname == _email && senderNickname != _groupInfo.CreatedBy)
                 {
-                    MessageBox.Show("Bạn đã bị gỡ khỏi nhóm này.");
-
-
                     System.Windows.Application.Current.Dispatcher.Invoke(() =>
                     {
-                        this.Hide();
-                        MainForm_1 mainForm = new MainForm_1(_email);
-                        mainForm.ShowDialog();
-                        this.Close();
+                        try
+                        {
+                            System.Windows.MessageBox.Show("Bạn đã bị gỡ khỏi nhóm này.");
+                            if (this.IsLoaded)
+                            {
+                                this.Hide();
+                                MainForm_1 mainForm = new MainForm_1(_email);
+                                mainForm.ShowDialog();
+                                this.Close();
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            Console.WriteLine($"Lỗi khi xử lý thông báo xóa khỏi nhóm: {ex.Message}");
+                        }
                     });
                 }
 
-                // Render từng message mới nhận
+                // Render từng tin nhắn mới nhận
                 var msg = new GroupMessagesDTO
                 {
                     GroupId = groupId,
@@ -213,11 +225,18 @@ namespace ChatApp.Client.Views
                 };
                 System.Windows.Application.Current.Dispatcher.Invoke(() =>
                 {
-                    RenderGroupMessage(msg, senderEmail == _email);
+                    try
+                    {
+                        RenderGroupMessage(msg, senderEmail == _email);
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"Lỗi khi render tin nhắn: {ex.Message}");
+                    }
                 });
             });
 
-            // Kết nối notification hub
+            // Kết nối notification hub
             ConnectNotificationHub();
         }
 
@@ -541,8 +560,8 @@ namespace ChatApp.Client.Views
         {
             if (_groupInfo.CreatedBy == _email)
             {
-                GroupManagementWindow groupManagementWindow = new GroupManagementWindow(_groupInfo, _notificationHub, _chatGroupHub);
-                var result = groupManagementWindow.ShowDialog();
+                _currentManagementWindow = new GroupManagementWindow(_groupInfo, _notificationHub, _chatGroupHub);
+                var result = _currentManagementWindow.ShowDialog();
 
                 if (result == true)
                 {
@@ -554,8 +573,8 @@ namespace ChatApp.Client.Views
             }
             else
             {
-                GroupManagementUserWindow groupManagementUserWindow = new GroupManagementUserWindow(_groupInfo, _email, _notificationHub, _chatGroupHub);
-                var result = groupManagementUserWindow.ShowDialog();
+                _currentManagementWindow = new GroupManagementUserWindow(_groupInfo, _email, _notificationHub, _chatGroupHub);
+                var result = _currentManagementWindow.ShowDialog();
 
                 if (result == true)
                 {

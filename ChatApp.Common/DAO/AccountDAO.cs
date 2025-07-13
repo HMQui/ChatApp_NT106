@@ -106,6 +106,7 @@ namespace ChatApp.Common.DAO
                 id, 
                 email, 
                 full_name, 
+                phone, 
                 avatar_url, 
                 status, 
                 created_at, 
@@ -126,9 +127,8 @@ namespace ChatApp.Common.DAO
                 Id = Convert.ToInt32(row["id"]),
                 Email = row["email"].ToString(),
                 FullName = row["full_name"].ToString(),
-                AvatarUrl = row["avatar_url"] != DBNull.Value
-                               ? row["avatar_url"].ToString()
-                               : null,
+                Phone = row["phone"] != DBNull.Value ? row["phone"].ToString() : null,
+                AvatarUrl = row["avatar_url"] != DBNull.Value ? row["avatar_url"].ToString() : null,
                 Status = row["status"].ToString(),
                 CreatedAt = Convert.ToDateTime(row["created_at"]),
                 IsVerified = Convert.ToBoolean(row["is_verified"])
