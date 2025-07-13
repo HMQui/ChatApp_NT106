@@ -12,10 +12,10 @@
     <Grid>
         <Border CornerRadius="10" Background="#FFFFFF" BorderBrush="#E2E8F0" BorderThickness="1" Margin="20">
             <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Width="300">
-                <!-- Avatar Placeholder -->
+                <!-- Avatar -->
                 <Ellipse Width="100" Height="100" Margin="0,20,0,20">
                     <Ellipse.Fill>
-                        <ImageBrush ImageSource="https://static.thenounproject.com/png/2309777-200.png" Stretch="UniformToFill"/>
+                        <ImageBrush x:Name="AvatarImageBrush" Stretch="UniformToFill"/>
                     </Ellipse.Fill>
                 </Ellipse>
 

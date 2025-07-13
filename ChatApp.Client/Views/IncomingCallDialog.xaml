@@ -6,17 +6,75 @@
         xmlns:local="clr-namespace:ChatApp.Client.Views"
         mc:Ignorable="d"
         Title="IncomingCallDialog" Height="450" Width="800"
-        ResizeMode="NoResize"
-        Background="#FFFFFF"
         Loaded="form_loading"
-        Closing="form_closing">
+        Closing="form_closing"
+        Background="#F5F7FA" ResizeMode="NoResize">
+
+    <Window.Resources>
+        <Style x:Key="GreenButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="#45a575"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Height" Value="40"/>
+            <Setter Property="Width" Value="120"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}" 
+                                CornerRadius="8" 
+                                Padding="10,0">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Background" Value="#38A169"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter Property="Background" Value="#2F855A"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="RedButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="#EF4444"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Height" Value="40"/>
+            <Setter Property="Width" Value="120"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}" 
+                                CornerRadius="8" 
+                                Padding="10,0">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Background" Value="#DC2626"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter Property="Background" Value="#B91C1C"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Window.Resources>
+
     <Grid>
         <Border CornerRadius="10" Background="#FFFFFF" BorderBrush="#E2E8F0" BorderThickness="1" Margin="20">
             <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Width="300">
                 <!-- Avatar -->
                 <Ellipse Width="100" Height="100" Margin="0,20,0,20">
                     <Ellipse.Fill>
-                        <ImageBrush ImageSource="https://static.thenounproject.com/png/2309777-200.png" Stretch="UniformToFill"/>
+                        <ImageBrush x:Name="AvatarImageBrush" Stretch="UniformToFill"/>
                     </Ellipse.Fill>
                 </Ellipse>
 
@@ -28,102 +86,14 @@
 
                 <!-- Nút gọi đến -->
                 <StackPanel x:Name="spCallRequest" Orientation="Horizontal" HorizontalAlignment="Center" Margin="10">
-                    <Button Content="Chấp nhận" Width="120" Height="40" Background="#45a575" Foreground="White" BorderThickness="0" Margin="5" Click="Accept_Click" Cursor="Hand">
-                        <Button.Style>
-                            <Style TargetType="Button">
-                                <Setter Property="Template">
-                                    <Setter.Value>
-                                        <ControlTemplate TargetType="Button">
-                                            <Border Background="{TemplateBinding Background}" CornerRadius="8" Padding="10,0">
-                                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                            </Border>
-                                            <ControlTemplate.Triggers>
-                                                <Trigger Property="IsMouseOver" Value="True">
-                                                    <Setter Property="Background" Value="#38A169"/>
-                                                </Trigger>
-                                                <Trigger Property="IsPressed" Value="True">
-                                                    <Setter Property="Background" Value="#2F855A"/>
-                                                </Trigger>
-                                            </ControlTemplate.Triggers>
-                                        </ControlTemplate>
-                                    </Setter.Value>
-                                </Setter>
-                            </Style>
-                        </Button.Style>
-                    </Button>
-                    <Button Content="Từ chối" Width="120" Height="40" Background="#EF4444" Foreground="White" BorderThickness="0" Margin="5" Click="Decline_Click" Cursor="Hand">
-                        <Button.Style>
-                            <Style TargetType="Button">
-                                <Setter Property="Template">
-                                    <Setter.Value>
-                                        <ControlTemplate TargetType="Button">
-                                            <Border Background="{TemplateBinding Background}" CornerRadius="8" Padding="10,0">
-                                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                            </Border>
-                                            <ControlTemplate.Triggers>
-                                                <Trigger Property="IsMouseOver" Value="True">
-                                                    <Setter Property="Background" Value="#DC2626"/>
-                                                </Trigger>
-                                                <Trigger Property="IsPressed" Value="True">
-                                                    <Setter Property="Background" Value="#B91C1C"/>
-                                                </Trigger>
-                                            </ControlTemplate.Triggers>
-                                        </ControlTemplate>
-                                    </Setter.Value>
-                                </Setter>
-                            </Style>
-                        </Button.Style>
-                    </Button>
+                    <Button Content="Chấp nhận" Style="{StaticResource GreenButtonStyle}" Margin="5" Click="Accept_Click"/>
+                    <Button Content="Từ chối" Style="{StaticResource RedButtonStyle}" Margin="5" Click="Decline_Click"/>
                 </StackPanel>
 
                 <!-- Nút trong khi đang gọi -->
                 <StackPanel x:Name="spCallInProgress" Orientation="Horizontal" HorizontalAlignment="Center" Margin="10" Visibility="Collapsed">
-                    <Button x:Name="btnToggleMic" Content="Tắt mic" Width="120" Height="40" Background="#45a575" Foreground="White" BorderThickness="0" Margin="5" Click="ToggleMic_Click" Cursor="Hand">
-                        <Button.Style>
-                            <Style TargetType="Button">
-                                <Setter Property="Template">
-                                    <Setter.Value>
-                                        <ControlTemplate TargetType="Button">
-                                            <Border Background="{TemplateBinding Background}" CornerRadius="8" Padding="10,0">
-                                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                            </Border>
-                                            <ControlTemplate.Triggers>
-                                                <Trigger Property="IsMouseOver" Value="True">
-                                                    <Setter Property="Background" Value="#38A169"/>
-                                                </Trigger>
-                                                <Trigger Property="IsPressed" Value="True">
-                                                    <Setter Property="Background" Value="#2F855A"/>
-                                                </Trigger>
-                                            </ControlTemplate.Triggers>
-                                        </ControlTemplate>
-                                    </Setter.Value>
-                                </Setter>
-                            </Style>
-                        </Button.Style>
-                    </Button>
-                    <Button x:Name="btnEndCall" Content="Kết thúc" Width="120" Height="40" Background="#EF4444" Foreground="White" BorderThickness="0" Margin="5" Click="EndCall_Click" Cursor="Hand">
-                        <Button.Style>
-                            <Style TargetType="Button">
-                                <Setter Property="Template">
-                                    <Setter.Value>
-                                        <ControlTemplate TargetType="Button">
-                                            <Border Background="{TemplateBinding Background}" CornerRadius="8" Padding="10,0">
-                                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                            </Border>
-                                            <ControlTemplate.Triggers>
-                                                <Trigger Property="IsMouseOver" Value="True">
-                                                    <Setter Property="Background" Value="#DC2626"/>
-                                                </Trigger>
-                                                <Trigger Property="IsPressed" Value="True">
-                                                    <Setter Property="Background" Value="#B91C1C"/>
-                                                </Trigger>
-                                            </ControlTemplate.Triggers>
-                                        </ControlTemplate>
-                                    </Setter.Value>
-                                </Setter>
-                            </Style>
-                        </Button.Style>
-                    </Button>
+                    <Button x:Name="btnToggleMic" Content="Tắt mic" Style="{StaticResource GreenButtonStyle}" Margin="5" Click="ToggleMic_Click"/>
+                    <Button x:Name="btnEndCall" Content="Kết thúc" Style="{StaticResource RedButtonStyle}" Margin="5" Click="EndCall_Click"/>
                 </StackPanel>
             </StackPanel>
         </Border>

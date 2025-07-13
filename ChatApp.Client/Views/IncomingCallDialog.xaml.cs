@@ -3,6 +3,9 @@ using System.ComponentModel;
 using System.Windows;
 using System.Windows.Threading;
 using NAudio.Wave;
+using System.Windows.Media.Imaging;
+using ChatApp.Common.DAO;
+using ChatApp.Common.DTOs;
 
 namespace ChatApp.Client.Views
 {
@@ -30,6 +33,9 @@ namespace ChatApp.Client.Views
             _fromEmail = fromEmail;
             _toEmail = toEmail;
 
+            txtCaller.Text = _fromEmail;
+            UserDTO _fromUser = AccountDAO.Instance.SearchUsersByEmail(fromEmail);
+            LoadAvatar(_fromUser.AvatarUrl);
             // Start the socket hub
             _notificationHub = new NotificationHub(_toEmail);
         }
@@ -46,12 +52,19 @@ namespace ChatApp.Client.Views
                         this.Close();
                     });
                 }
-                else if (messageType == "end_voice_call") this.Close();
+                else if (messageType == "end_voice_call")
+                {
+                    System.Windows.Application.Current.Dispatcher.Invoke(() =>
+                    {
+                        this.Close();
+                    });
+                };
             });
         }
 
         private async void form_closing(object sender, CancelEventArgs e)
         {
+            await _notificationHub.SendNotification(_toEmail, [_fromEmail], "voice call", "end_voice_call");
             _waveIn?.StopRecording();
             _waveIn?.Dispose();
             _voiceHub?.DisposeAsync();
@@ -60,15 +73,38 @@ namespace ChatApp.Client.Views
             _bufferedWaveProvider = null;
             _isInCall = false;
             _callTimer?.Stop();
-            await _notificationHub.SendNotification(_fromEmail, [_toEmail], "voice call", "end_voice_call");
+            await _notificationHub.SendNotification(_toEmail, [_fromEmail], "voice call", "end_voice_call");
             if (_notificationHub != null)
             {
                 await _notificationHub.DisconnectAsync();
             }
-            System.Windows.Application.Current.Dispatcher.Invoke(() =>
+        }
+
+        private void LoadAvatar(string avatarUrl)
+        {
+            var bitmap = new BitmapImage();
+
+            try
             {
-                this.Close();
-            });
+                if (!string.IsNullOrEmpty(avatarUrl))
+                {
+                    bitmap.BeginInit();
+                    bitmap.UriSource = new Uri(avatarUrl, UriKind.Absolute);
+                    bitmap.CacheOption = BitmapCacheOption.OnLoad;
+                    bitmap.EndInit();
+                }
+                else
+                {
+                    throw new Exception("No avatar URL");
+                }
+            }
+            catch
+            {
+                // Dùng ảnh mặc định nếu lỗi hoặc không có URL
+                bitmap = new BitmapImage(new Uri("https://static.thenounproject.com/png/2309777-200.png", UriKind.Absolute));
+            }
+
+            AvatarImageBrush.ImageSource = bitmap;
         }
 
         private async void Accept_Click(object sender, RoutedEventArgs e)
@@ -141,7 +177,6 @@ namespace ChatApp.Client.Views
 
         private async void EndCall_Click(object sender, RoutedEventArgs e)
         {
-            await _notificationHub.SendNotification(_fromEmail, [_toEmail], "voice call", "end_voice_call");
             _waveIn?.StopRecording();
             _waveIn?.Dispose();
             _voiceHub?.DisposeAsync();
@@ -156,9 +191,12 @@ namespace ChatApp.Client.Views
             });
         }
 
-        private void Decline_Click(object sender, RoutedEventArgs e)
+        private async void Decline_Click(object sender, RoutedEventArgs e)
         {
-
+            System.Windows.Application.Current.Dispatcher.Invoke(() =>
+            {
+                this.Close();
+            });
         }
     }
 }

@@ -3,6 +3,9 @@ using System.ComponentModel;
 using System.Windows;
 using System.Windows.Threading;
 using NAudio.Wave;
+using System.Windows.Media.Imaging;
+using ChatApp.Common.DAO;
+using ChatApp.Common.DTOs;
 
 
 namespace ChatApp.Client.Views
@@ -32,12 +35,15 @@ namespace ChatApp.Client.Views
             _toEmail = toEmail;
             _user = username;
 
+            UserDTO _toUser = AccountDAO.Instance.SearchUsersByEmail(toEmail);
+            LoadAvatar(_toUser.AvatarUrl);
             // Start the socket hub
             _notificationHub = new NotificationHub(_fromEmail);
         }
 
         private async void form_loading(object sender, EventArgs e)
         {
+            txtReceiver.Text = _user; // You can map toEmail to a display name if needed
             txtReceiver.Text = _user; // You can map toEmail to a display name if needed
             // đợi phản hồi từ server nếu có thông báo mới
             await _notificationHub.ConnectAsync((id, senderEmail, message, messageType) =>
@@ -106,21 +112,54 @@ namespace ChatApp.Client.Views
                         _isInCall = true;
                     });
                 }
-                else if (messageType == "end_voice_call") this.Close();
+                else if (messageType == "end_voice_call") 
+                {
+                    System.Windows.Application.Current.Dispatcher.Invoke(() =>
+                    {
+                        this.Close();
+                    });
+                }
+                ;
             });
 
             // gửi thông báo gọi đến user
             await _notificationHub.SendNotification(_fromEmail, [_toEmail], "voice call", "voice_call");
         }
+
+        private void LoadAvatar(string avatarUrl)
+        {
+            var bitmap = new BitmapImage();
+
+            try
+            {
+                if (!string.IsNullOrEmpty(avatarUrl))
+                {
+                    bitmap.BeginInit();
+                    bitmap.UriSource = new Uri(avatarUrl, UriKind.Absolute);
+                    bitmap.CacheOption = BitmapCacheOption.OnLoad;
+                    bitmap.EndInit();
+                }
+                else
+                {
+                    throw new Exception("No avatar URL");
+                }
+            }
+            catch
+            {
+                // Dùng ảnh mặc định nếu lỗi hoặc không có URL
+                bitmap = new BitmapImage(new Uri("https://static.thenounproject.com/png/2309777-200.png", UriKind.Absolute));
+            }
+
+            AvatarImageBrush.ImageSource = bitmap;
+        }
+
         private void ToggleMic_Click(object sender, RoutedEventArgs e)
         {
             _isMicOn = !_isMicOn;
             btnToggleMic.Content = _isMicOn ? "Tắt mic" : "Bật mic";
-            // TODO: gửi trạng thái mic hoặc xử lý ở client
         }
         private async void EndCall_Click(object sender, RoutedEventArgs e)
         {
-            await _notificationHub.SendNotification(_fromEmail, [_toEmail], "voice call", "end_voice_call");
             _waveIn?.StopRecording();
             _waveIn?.Dispose();
             _voiceHub?.DisposeAsync();
@@ -137,6 +176,7 @@ namespace ChatApp.Client.Views
 
         private async void form_closing(object sender, CancelEventArgs e)
         {
+            await _notificationHub.SendNotification(_fromEmail, [_toEmail], "voice call", "end_voice_call");
             _waveIn?.StopRecording();
             _waveIn?.Dispose();
             _voiceHub?.DisposeAsync();
@@ -145,13 +185,14 @@ namespace ChatApp.Client.Views
             {
                 await _notificationHub.DisconnectAsync();
             }
-            this.Close();
         }
 
         private async void Cancel_Click(object sender, RoutedEventArgs e)
         {
-            await _notificationHub.SendNotification(_fromEmail, [_toEmail], "voice call", "cancel_voice_call");
-            this.Close();
+            System.Windows.Application.Current.Dispatcher.Invoke(() =>
+            {
+                this.Close();
+            });
         }
     }
 }

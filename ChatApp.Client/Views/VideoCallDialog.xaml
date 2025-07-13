@@ -14,12 +14,13 @@
             <Grid>
                 <!-- Call State UI (before accept) -->
                 <StackPanel x:Name="spCallState" HorizontalAlignment="Center" VerticalAlignment="Center" Width="300">
-                    <!-- Avatar Placeholder -->
+                    <!-- Avatar -->
                     <Ellipse Width="100" Height="100" Margin="0,20,0,20">
                         <Ellipse.Fill>
-                            <ImageBrush ImageSource="https://static.thenounproject.com/png/2309777-200.png" Stretch="UniformToFill"/>
+                            <ImageBrush x:Name="AvatarImageBrush" Stretch="UniformToFill"/>
                         </Ellipse.Fill>
                     </Ellipse>
+
 
                     <!-- Calling State -->
                     <TextBlock x:Name="txtCallingStatus" Text="Đang gọi..." FontSize="20" FontWeight="SemiBold" Foreground="#2D3748" Margin="0,0,0,10" HorizontalAlignment="Center"/>
@@ -52,30 +53,91 @@
 
                 <!-- In-Call UI (after accept) -->
                 <Grid x:Name="gridInCall" Visibility="Collapsed">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="*" />
-                    </Grid.ColumnDefinitions>
-
-                    <!-- Local Video (Self) -->
-                    <Border Grid.Column="0" Margin="10" Background="#000000">
-                        <Image x:Name="imgLocalVideo" Stretch="Uniform" />
-                    </Border>
-
                     <!-- Remote Video -->
-                    <Border Grid.Column="1" Margin="10" Background="#000000">
-                        <Image x:Name="imgRemoteVideo" Stretch="Uniform" />
+                    <Border Margin="10" Background="#000000">
+                        <Grid>
+                            <Image x:Name="imgRemoteVideo" Stretch="UniformToFill"/>
+                            <!-- Local Video (Self) in Top-Right Corner -->
+                            <Border Width="150" Height="100" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="10" Background="#000000">
+                                <Image x:Name="imgLocalVideo" Stretch="UniformToFill"/>
+                            </Border>
+                        </Grid>
                     </Border>
 
                     <!-- Controls -->
-                    <StackPanel Orientation="Horizontal"
-                                HorizontalAlignment="Center"
-                                VerticalAlignment="Bottom"
-                                Margin="0,0,0,20">
-                        <TextBlock x:Name="txtCallDuration" Text="00:00" FontSize="18" FontWeight="SemiBold" Foreground="#2D3748" Margin="10,0"/>
-                        <Button x:Name="btnToggleMic" Content="Tắt mic" Width="120" Height="40" Background="#45a575" Foreground="White" BorderThickness="0" Margin="10" Click="ToggleMic_Click" Cursor="Hand"/>
-                        <Button x:Name="btnToggleCam" Content="Tắt camera" Width="120" Height="40" Background="#4299E1" Foreground="White" BorderThickness="0" Margin="10" Click="ToggleCam_Click" Cursor="Hand"/>
-                        <Button x:Name="btnEndCall" Content="Kết thúc" Width="120" Height="40" Background="#EF4444" Foreground="White" BorderThickness="0" Margin="10" Click="EndCall_Click" Cursor="Hand"/>
+                    <StackPanel VerticalAlignment="Bottom" HorizontalAlignment="Center" Margin="0,0,0,20" Width="400">
+                        <TextBlock x:Name="txtCallDuration" Text="00:00" FontSize="18" FontWeight="SemiBold" Foreground="#2D3748" Margin="0,0,0,20" HorizontalAlignment="Center"/>
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                            <Button x:Name="btnToggleMic" Content="Tắt mic" Width="120" Height="40" Background="#45a575" Foreground="White" BorderThickness="0" Margin="5" Click="ToggleMic_Click" Cursor="Hand">
+                                <Button.Style>
+                                    <Style TargetType="Button">
+                                        <Setter Property="Template">
+                                            <Setter.Value>
+                                                <ControlTemplate TargetType="Button">
+                                                    <Border Background="{TemplateBinding Background}" CornerRadius="8" Padding="10,0">
+                                                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                    </Border>
+                                                    <ControlTemplate.Triggers>
+                                                        <Trigger Property="IsMouseOver" Value="True">
+                                                            <Setter Property="Background" Value="#38A169"/>
+                                                        </Trigger>
+                                                        <Trigger Property="IsPressed" Value="True">
+                                                            <Setter Property="Background" Value="#2F855A"/>
+                                                        </Trigger>
+                                                    </ControlTemplate.Triggers>
+                                                </ControlTemplate>
+                                            </Setter.Value>
+                                        </Setter>
+                                    </Style>
+                                </Button.Style>
+                            </Button>
+                            <Button x:Name="btnToggleCam" Content="Tắt camera" Width="120" Height="40" Background="#4299E1" Foreground="White" BorderThickness="0" Margin="5" Click="ToggleCam_Click" Cursor="Hand">
+                                <Button.Style>
+                                    <Style TargetType="Button">
+                                        <Setter Property="Template">
+                                            <Setter.Value>
+                                                <ControlTemplate TargetType="Button">
+                                                    <Border Background="{TemplateBinding Background}" CornerRadius="8" Padding="10,0">
+                                                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                    </Border>
+                                                    <ControlTemplate.Triggers>
+                                                        <Trigger Property="IsMouseOver" Value="True">
+                                                            <Setter Property="Background" Value="#3182CE"/>
+                                                        </Trigger>
+                                                        <Trigger Property="IsPressed" Value="True">
+                                                            <Setter Property="Background" Value="#2B6CB0"/>
+                                                        </Trigger>
+                                                    </ControlTemplate.Triggers>
+                                                </ControlTemplate>
+                                            </Setter.Value>
+                                        </Setter>
+                                    </Style>
+                                </Button.Style>
+                            </Button>
+                            <Button x:Name="btnEndCall" Content="Kết thúc" Width="120" Height="40" Background="#EF4444" Foreground="White" BorderThickness="0" Margin="5" Click="EndCall_Click" Cursor="Hand">
+                                <Button.Style>
+                                    <Style TargetType="Button">
+                                        <Setter Property="Template">
+                                            <Setter.Value>
+                                                <ControlTemplate TargetType="Button">
+                                                    <Border Background="{TemplateBinding Background}" CornerRadius="8" Padding="10,0">
+                                                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                    </Border>
+                                                    <ControlTemplate.Triggers>
+                                                        <Trigger Property="IsMouseOver" Value="True">
+                                                            <Setter Property="Background" Value="#DC2626"/>
+                                                        </Trigger>
+                                                        <Trigger Property="IsPressed" Value="True">
+                                                            <Setter Property="Background" Value="#B91C1C"/>
+                                                        </Trigger>
+                                                    </ControlTemplate.Triggers>
+                                                </ControlTemplate>
+                                            </Setter.Value>
+                                        </Setter>
+                                    </Style>
+                                </Button.Style>
+                            </Button>
+                        </StackPanel>
                     </StackPanel>
                 </Grid>
             </Grid>
